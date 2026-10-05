@@ -1,0 +1,23 @@
+# Maven
+target/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dados locais do FocusFlow
+*.db
+*.db-journal
