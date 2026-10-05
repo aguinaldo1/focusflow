@@ -1852,3 +1852,262 @@ mantidos em responsabilidades separadas e cobertos por testes automatizados.
 **BLOCO 08 — Primeira execução visível no terminal.**
 
 Antes de introduzir JavaFX, será criada uma pequena aplicação executável que permita observar o FocusFlow funcionando em tempo real pelo terminal.
+
+---
+
+# BLOCO 08 — Primeira execução visível no terminal
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Criar a primeira aplicação executável do FocusFlow integrando o domínio, o timer e o relógio real antes da introdução da interface gráfica.
+
+Até este ponto, os componentes estavam validados principalmente por testes automatizados.
+
+Neste bloco, o objetivo foi observar o sistema funcionando como uma aplicação real.
+
+## Aplicação criada
+
+Foi criado:
+
+```text
+src/main/java/io/github/aguinaldo1/focusflow/cli/FocusFlowCli.java
+```
+
+A aplicação de demonstração integra:
+
+```text
+FocusFlowCli
+      │
+      ▼
+PomodoroClock
+      │
+      ▼
+PomodoroTimer
+      │
+      ▼
+PomodoroSession
+```
+
+## Configuração de demonstração
+
+Para evitar esperar 25 minutos durante a validação manual, foi utilizada:
+
+```text
+FOCUS        10 segundos
+SHORT_BREAK   5 segundos
+LONG_BREAK    8 segundos
+CICLOS        4
+```
+
+Essa configuração não altera os valores padrão do produto.
+
+Os valores padrão permanecem:
+
+```text
+FOCUS        25 minutos
+SHORT_BREAK   5 minutos
+LONG_BREAK   15 minutos
+```
+
+## Execução
+
+Após compilação:
+
+```bash
+mvn test
+```
+
+o programa foi executado com:
+
+```bash
+java -cp target/classes \
+io.github.aguinaldo1.focusflow.cli.FocusFlowCli
+```
+
+A execução apresentou:
+
+```text
+=================================
+          FOCUSFLOW
+=================================
+
+Modo demonstração
+
+Foco:        10 segundos
+Pausa curta:  5 segundos
+Pausa longa:  8 segundos
+
+Iniciando foco...
+
+FOCO | 00:01
+
+✓ Foco concluído.
+Próxima fase: SHORT_BREAK
+Duração: 00:05
+
+O próximo intervalo permanece parado até o usuário iniciá-lo.
+```
+
+## Atualização da mesma linha do terminal
+
+Durante a execução foi utilizado:
+
+```java
+System.out.printf("\rFOCO | %s", ...)
+```
+
+O caractere:
+
+```text
+\r
+```
+
+faz com que os valores sejam sobrescritos na mesma linha.
+
+Durante a execução são apresentados valores como:
+
+```text
+00:10
+00:09
+00:08
+...
+00:01
+```
+
+Ao copiar a saída do terminal, normalmente permanece apenas o último valor renderizado.
+
+## Uso de `Thread.sleep(100)`
+
+A aplicação CLI contém:
+
+```java
+Thread.sleep(100);
+```
+
+Esse `sleep` não controla a passagem do tempo do Pomodoro.
+
+Sua responsabilidade é apenas evitar que o loop de apresentação consulte o estado continuamente consumindo CPU desnecessariamente.
+
+A passagem do tempo continua sendo responsabilidade de:
+
+```text
+PomodoroClock
+```
+
+Portanto:
+
+```text
+PomodoroClock
+→ produz os ticks de tempo
+
+FocusFlowCli
+→ observa e apresenta o estado
+```
+
+## Validação automatizada
+
+Antes da execução manual, todos os testes foram executados novamente.
+
+Resultado:
+
+```text
+Tests run: 20
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+```
+
+Também foi confirmada a compilação de:
+
+```text
+7 source files
+```
+
+## Validação temporal manual
+
+A execução também foi medida utilizando:
+
+```bash
+time java -cp target/classes \
+io.github.aguinaldo1.focusflow.cli.FocusFlowCli
+```
+
+Resultado:
+
+```text
+real    0m11.759s
+user    0m0.393s
+sys     0m0.442s
+```
+
+A configuração de foco utilizada era de:
+
+```text
+10 segundos
+```
+
+O tempo total do processo inclui também:
+
+- inicialização da JVM;
+- criação dos componentes;
+- scheduler;
+- apresentação no terminal;
+- encerramento do processo.
+
+O resultado foi considerado coerente com a configuração utilizada.
+
+## Evidência funcional
+
+A execução comprovou a integração:
+
+```text
+aplicação inicia
+↓
+sessão inicia
+↓
+relógio gera ticks reais
+↓
+timer reduz o tempo restante
+↓
+foco termina
+↓
+sessão muda para SHORT_BREAK
+↓
+timer carrega 5 segundos
+↓
+status retorna para IDLE
+```
+
+Essa última etapa confirma também a aplicação da DEC-002:
+
+```text
+o próximo intervalo não inicia automaticamente
+```
+
+## Marco do projeto
+
+A partir deste bloco, o FocusFlow deixou de ser apenas um conjunto de classes de domínio cobertas por testes.
+
+O sistema passou a possuir uma aplicação executável capaz de demonstrar a contagem regressiva real.
+
+## Próximo passo
+
+**BLOCO 09 — Controles interativos pelo terminal.**
+
+Antes da introdução do JavaFX, será validada a interação real do usuário com operações como:
+
+```text
+iniciar
+pausar
+continuar
+resetar
+sair
+```
+
+Essa etapa também permitirá avaliar a interação entre a thread responsável pelo relógio e a thread que recebe comandos do usuário.
