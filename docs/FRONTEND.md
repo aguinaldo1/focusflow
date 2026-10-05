@@ -165,3 +165,22 @@ Os botões também são habilitados ou desabilitados conforme o estado atual:
 IDLE    → Iniciar
 RUNNING → Pausar
 PAUSED  → Continuar
+
+---
+
+# BLOCO 13 — Atualização em tempo real
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+O `PomodoroClock` foi conectado à interface JavaFX.
+
+A interface utiliza um `Timeline` apenas para consultar periodicamente o `PomodoroSnapshot` e atualizar a tela.
+
+Responsabilidades:
+
+```text
+PomodoroClock → passagem real do tempo
+PomodoroTimer → estado e tempo restante
+Timeline      → atualização visual

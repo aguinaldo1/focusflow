@@ -1,9 +1,13 @@
 package io.github.aguinaldo1.focusflow.ui;
 
+import io.github.aguinaldo1.focusflow.pomodoro.PomodoroClock;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSession;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroTimer;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,6 +23,8 @@ import java.time.Duration;
 public final class FocusFlowApp extends Application {
 
     private PomodoroTimer timer;
+    private PomodoroClock clock;
+    private Timeline uiRefreshTimeline;
 
     private Label phaseLabel;
     private Label timeLabel;
@@ -39,6 +45,9 @@ public final class FocusFlowApp extends Application {
 
         timer =
                 new PomodoroTimer(session);
+
+        clock =
+                new PomodoroClock(timer);
 
         Label titleLabel =
                 new Label("FocusFlow");
@@ -130,9 +139,30 @@ public final class FocusFlowApp extends Application {
 
         refreshView();
 
+        startUiRefresh();
+
+        clock.start();
+
         stage.setTitle("FocusFlow");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private void startUiRefresh() {
+
+        uiRefreshTimeline =
+                new Timeline(
+                        new KeyFrame(
+                                javafx.util.Duration.millis(200),
+                                event -> refreshView()
+                        )
+                );
+
+        uiRefreshTimeline.setCycleCount(
+                Animation.INDEFINITE
+        );
+
+        uiRefreshTimeline.play();
     }
 
     private void executeAction(
@@ -223,6 +253,18 @@ public final class FocusFlowApp extends Application {
                 minutes,
                 seconds
         );
+    }
+
+    @Override
+    public void stop() {
+
+        if (uiRefreshTimeline != null) {
+            uiRefreshTimeline.stop();
+        }
+
+        if (clock != null) {
+            clock.close();
+        }
     }
 
     public static void main(String[] args) {
