@@ -607,3 +607,19 @@ focusflow/
 └── src/
     ├── main/java/io/github/aguinaldo1/focusflow/
     └── test/java/io/github/aguinaldo1/focusflow/
+---
+
+# BLOCO 03 — Publicação no GitHub
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Publicar a fundação técnica do FocusFlow em um repositório remoto, preservando o histórico Git criado localmente.
+
+## Repositório remoto
+
+```text
+git@github.com:aguinaldo1/focusflow.git
