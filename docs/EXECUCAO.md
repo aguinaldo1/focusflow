@@ -623,3 +623,28 @@ Publicar a fundação técnica do FocusFlow em um repositório remoto, preservan
 
 ```text
 git@github.com:aguinaldo1/focusflow.git
+---
+
+# BLOCO 04 — Modelagem inicial do motor Pomodoro
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Criar o primeiro domínio funcional do FocusFlow antes da implementação do cronômetro real e da interface gráfica.
+
+## Decisão arquitetural
+
+Foi decidido separar:
+
+- a fase atual do Pomodoro;
+- o estado de execução.
+
+### Fases
+
+```text
+FOCUS
+SHORT_BREAK
+LONG_BREAK
