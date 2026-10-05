@@ -575,3 +575,35 @@ Atualizar ferramentas sem necessidade adicionaria mudança e risco sem gerar val
 **Próximo passo**
 
 BLOCO 02 — criar a estrutura Maven mínima, validar o `pom.xml` e executar o primeiro `mvn test`.
+---
+
+# BLOCO 02 — Fundação Maven
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Criar uma estrutura mínima e reproduzível para o FocusFlow antes da implementação das regras de negócio.
+
+## Ambiente validado
+
+- Java: OpenJDK 21.0.12.1
+- Maven: Apache Maven 3.8.7
+- Git: 2.43.0
+- Sistema: Ubuntu 24.04 / WSL2
+- Kernel: 6.18.33.2-microsoft-standard-wsl2
+
+## Estrutura inicial
+
+```text
+focusflow/
+├── .gitignore
+├── README.md
+├── pom.xml
+├── docs/
+│   └── EXECUCAO.md
+└── src/
+    ├── main/java/io/github/aguinaldo1/focusflow/
+    └── test/java/io/github/aguinaldo1/focusflow/
