@@ -2111,3 +2111,236 @@ sair
 ```
 
 Essa etapa também permitirá avaliar a interação entre a thread responsável pelo relógio e a thread que recebe comandos do usuário.
+
+---
+
+# BLOCO 09 — Controles interativos e preparação para concorrência
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Permitir que o usuário controle uma sessão Pomodoro pelo terminal enquanto o relógio continua executando em uma thread separada.
+
+Os comandos implementados foram:
+
+```text
+start
+pause
+resume
+reset
+status
+help
+exit
+```
+
+## Problema técnico
+
+Com a introdução de interação do usuário, passaram a existir duas fontes de acesso ao estado do Pomodoro:
+
+```text
+thread do relógio
+        │
+        └── elapse()
+
+thread principal
+        │
+        ├── start()
+        ├── pause()
+        ├── resume()
+        ├── reset()
+        └── snapshot()
+```
+
+Era necessário evitar alterações concorrentes inconsistentes no timer.
+
+## DEC-007 — Serializar operações do timer
+
+As operações de `PomodoroTimer` que acessam ou alteram estado passaram a utilizar:
+
+```java
+synchronized
+```
+
+Foram protegidos:
+
+```text
+start()
+pause()
+resume()
+elapse()
+reset()
+getRemainingTime()
+snapshot()
+```
+
+Dessa forma, apenas uma operação modifica ou consulta o estado protegido por vez.
+
+## Snapshot imutável
+
+Foi criado:
+
+```text
+PomodoroSnapshot
+```
+
+contendo:
+
+```text
+phase
+status
+completedFocusCycles
+remainingTime
+```
+
+O objetivo é fornecer para a camada de apresentação uma fotografia consistente do estado do Pomodoro.
+
+A CLI passou a consultar:
+
+```java
+timer.snapshot()
+```
+
+em vez de acessar diretamente vários atributos da sessão.
+
+## Fronteira arquitetural
+
+A arquitetura passou a seguir:
+
+```text
+FocusFlowCli
+     │
+     ├── comandos do usuário
+     │
+     ▼
+PomodoroTimer
+     ▲
+     │
+     └── elapse()
+     │
+PomodoroClock
+```
+
+`PomodoroSession` continua responsável somente pelas regras de domínio.
+
+## Validação automatizada
+
+Foram acrescentados testes para:
+
+1. continuar a contagem após `resume`;
+2. iniciar manualmente a pausa curta;
+3. fornecer um snapshot consistente.
+
+Resultado:
+
+```text
+Tests run: 23
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+```
+
+## Validação manual
+
+Foi executada a aplicação interativa:
+
+```bash
+java -cp target/classes \
+io.github.aguinaldo1.focusflow.cli.FocusFlowCli
+```
+
+Foram validados manualmente:
+
+```text
+start
+status
+pause
+status
+resume
+status
+reset
+status
+exit
+```
+
+O fluxo observado confirmou:
+
+```text
+IDLE
+↓ start
+RUNNING
+↓ pause
+PAUSED
+↓ espera
+PAUSED sem redução do tempo
+↓ resume
+RUNNING
+↓ reset
+FOCUS + IDLE
+```
+
+## Comandos inválidos
+
+Também foi observado que o domínio impede operações incompatíveis com o estado atual.
+
+Exemplos:
+
+```text
+pause durante IDLE
+→ operação rejeitada
+
+resume durante IDLE
+→ operação rejeitada
+```
+
+A aplicação trata essas situações sem encerrar o processo.
+
+## Observação descoberta durante uso real
+
+Durante um dos testes, o usuário solicitou `pause` após o foco já ter terminado.
+
+O último status visual ainda havia mostrado `RUNNING`, porém o relógio continuou avançando enquanto o usuário digitava.
+
+Quando `pause` foi processado, a sessão já estava:
+
+```text
+SHORT_BREAK + IDLE
+```
+
+O comando foi corretamente recusado.
+
+Isso não representou uma race condition incorreta.
+
+Foi uma consequência natural de um estado que muda assincronamente enquanto o usuário interage com a aplicação.
+
+Essa descoberta será relevante para o desenho da futura interface gráfica.
+
+## Resultado
+
+O FocusFlow agora possui:
+
+```text
+domínio
++
+configuração
++
+timer
++
+relógio real
++
+controle concorrente
++
+snapshot de estado
++
+interface interativa de terminal
+```
+
+## Próximo passo
+
+**BLOCO 10 — preparação para a primeira interface gráfica com JavaFX.**
+
+A próxima etapa será definir a fronteira entre o motor já existente e a interface desktop, preservando as regras de domínio que já foram testadas.

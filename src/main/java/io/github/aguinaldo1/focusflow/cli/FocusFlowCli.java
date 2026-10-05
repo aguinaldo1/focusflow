@@ -3,22 +3,23 @@ package io.github.aguinaldo1.focusflow.cli;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroClock;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroConfig;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSession;
-import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
+import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroTimer;
 
 import java.time.Duration;
+import java.util.Scanner;
 
 public final class FocusFlowCli {
 
     private FocusFlowCli() {
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
 
         PomodoroConfig demoConfig = new PomodoroConfig(
+                Duration.ofSeconds(30),
                 Duration.ofSeconds(10),
-                Duration.ofSeconds(5),
-                Duration.ofSeconds(8),
+                Duration.ofSeconds(15),
                 4
         );
 
@@ -28,83 +29,248 @@ public final class FocusFlowCli {
         PomodoroTimer timer =
                 new PomodoroTimer(session);
 
-        System.out.println();
-        System.out.println("=================================");
-        System.out.println("          FOCUSFLOW");
-        System.out.println("=================================");
-        System.out.println();
-        System.out.println("Modo demonstração");
-        System.out.println();
-        System.out.println("Foco:        10 segundos");
-        System.out.println("Pausa curta:  5 segundos");
-        System.out.println("Pausa longa:  8 segundos");
-        System.out.println();
-        System.out.println("Iniciando foco...");
-        System.out.println();
+        printHeader();
 
-        try (PomodoroClock clock =
-                     new PomodoroClock(timer)) {
+        try (
+                PomodoroClock clock =
+                        new PomodoroClock(timer);
 
-            timer.start();
+                Scanner scanner =
+                        new Scanner(System.in)
+        ) {
+
             clock.start();
 
-            Duration lastDisplayed = null;
+            printHelp();
+            printStatus(timer.snapshot());
 
-            while (session.getStatus()
-                    != PomodoroStatus.IDLE) {
+            boolean applicationRunning = true;
 
-                Duration remaining =
-                        timer.getRemainingTime();
+            while (applicationRunning) {
 
-                if (!remaining.equals(lastDisplayed)) {
+                System.out.print("\nfocusflow> ");
 
-                    System.out.printf(
-                            "\rFOCO | %s",
-                            formatDuration(remaining)
-                    );
-
-                    System.out.flush();
-
-                    lastDisplayed = remaining;
+                if (!scanner.hasNextLine()) {
+                    break;
                 }
 
-                Thread.sleep(100);
-            }
+                String command =
+                        scanner.nextLine()
+                                .trim()
+                                .toLowerCase();
 
-            clock.stop();
+                try {
+
+                    switch (command) {
+
+                        case "start" -> {
+
+                            timer.start();
+
+                            System.out.println(
+                                    "Intervalo iniciado."
+                            );
+
+                            printStatus(
+                                    timer.snapshot()
+                            );
+                        }
+
+                        case "pause" -> {
+
+                            timer.pause();
+
+                            System.out.println(
+                                    "Intervalo pausado."
+                            );
+
+                            printStatus(
+                                    timer.snapshot()
+                            );
+                        }
+
+                        case "resume" -> {
+
+                            timer.resume();
+
+                            System.out.println(
+                                    "Intervalo retomado."
+                            );
+
+                            printStatus(
+                                    timer.snapshot()
+                            );
+                        }
+
+                        case "reset" -> {
+
+                            timer.reset();
+
+                            System.out.println(
+                                    "Pomodoro reiniciado."
+                            );
+
+                            printStatus(
+                                    timer.snapshot()
+                            );
+                        }
+
+                        case "status" ->
+                                printStatus(
+                                        timer.snapshot()
+                                );
+
+                        case "help" ->
+                                printHelp();
+
+                        case "exit" -> {
+
+                            applicationRunning = false;
+
+                            System.out.println(
+                                    "Encerrando FocusFlow..."
+                            );
+                        }
+
+                        case "" -> {
+                        }
+
+                        default ->
+                                System.out.println(
+                                        "Comando desconhecido. "
+                                                + "Digite 'help'."
+                                );
+                    }
+
+                } catch (IllegalStateException exception) {
+
+                    System.out.println(
+                            "Operação não permitida: "
+                                    + exception.getMessage()
+                    );
+                }
+            }
         }
 
+        System.out.println("FocusFlow encerrado.");
+    }
+
+    private static void printHeader() {
+
         System.out.println();
-        System.out.println();
-        System.out.println("✓ Foco concluído.");
         System.out.println(
-                "Próxima fase: " + session.getPhase()
+                "================================="
         );
 
         System.out.println(
-                "Duração: "
+                "          FOCUSFLOW"
+        );
+
+        System.out.println(
+                "================================="
+        );
+
+        System.out.println();
+        System.out.println(
+                "Modo interativo de demonstração"
+        );
+
+        System.out.println();
+        System.out.println(
+                "Foco:        30 segundos"
+        );
+
+        System.out.println(
+                "Pausa curta: 10 segundos"
+        );
+
+        System.out.println(
+                "Pausa longa: 15 segundos"
+        );
+    }
+
+    private static void printHelp() {
+
+        System.out.println();
+        System.out.println("Comandos:");
+
+        System.out.println(
+                "  start  - iniciar intervalo"
+        );
+
+        System.out.println(
+                "  pause  - pausar intervalo"
+        );
+
+        System.out.println(
+                "  resume - continuar intervalo"
+        );
+
+        System.out.println(
+                "  reset  - reiniciar Pomodoro"
+        );
+
+        System.out.println(
+                "  status - mostrar estado atual"
+        );
+
+        System.out.println(
+                "  help   - mostrar comandos"
+        );
+
+        System.out.println(
+                "  exit   - sair"
+        );
+    }
+
+    private static void printStatus(
+            PomodoroSnapshot snapshot
+    ) {
+
+        System.out.println();
+        System.out.println(
+                "--------- STATUS ---------"
+        );
+
+        System.out.println(
+                "Fase:       "
+                        + snapshot.phase()
+        );
+
+        System.out.println(
+                "Estado:     "
+                        + snapshot.status()
+        );
+
+        System.out.println(
+                "Restante:   "
                         + formatDuration(
-                                timer.getRemainingTime()
+                                snapshot.remainingTime()
                         )
         );
 
-        System.out.println();
         System.out.println(
-                "O próximo intervalo permanece parado "
-                        + "até o usuário iniciá-lo."
+                "Ciclos:     "
+                        + snapshot.completedFocusCycles()
         );
 
-        System.out.println();
+        System.out.println(
+                "--------------------------"
+        );
     }
 
     private static String formatDuration(
             Duration duration
     ) {
 
-        long totalSeconds = duration.toSeconds();
+        long totalSeconds =
+                duration.toSeconds();
 
-        long minutes = totalSeconds / 60;
-        long seconds = totalSeconds % 60;
+        long minutes =
+                totalSeconds / 60;
+
+        long seconds =
+                totalSeconds % 60;
 
         return String.format(
                 "%02d:%02d",

@@ -18,19 +18,19 @@ public class PomodoroTimer {
         this.remainingTime = session.getCurrentDuration();
     }
 
-    public void start() {
+    public synchronized void start() {
         session.start();
     }
 
-    public void pause() {
+    public synchronized void pause() {
         session.pause();
     }
 
-    public void resume() {
+    public synchronized void resume() {
         session.resume();
     }
 
-    public void elapse(Duration elapsedTime) {
+    public synchronized void elapse(Duration elapsedTime) {
 
         Objects.requireNonNull(
                 elapsedTime,
@@ -59,18 +59,24 @@ public class PomodoroTimer {
         remainingTime = remainingTime.minus(elapsedTime);
     }
 
-    public void reset() {
+    public synchronized void reset() {
 
         session.reset();
 
         remainingTime = session.getCurrentDuration();
     }
 
-    public Duration getRemainingTime() {
+    public synchronized Duration getRemainingTime() {
         return remainingTime;
     }
 
-    public PomodoroSession getSession() {
-        return session;
+    public synchronized PomodoroSnapshot snapshot() {
+
+        return new PomodoroSnapshot(
+                session.getPhase(),
+                session.getStatus(),
+                session.getCompletedFocusCycles(),
+                remainingTime
+        );
     }
 }

@@ -139,4 +139,97 @@ class PomodoroTimerTest {
                 timer.getRemainingTime()
         );
     }
+
+@Test
+void shouldContinueCountdownAfterResume() {
+
+    PomodoroSession session = new PomodoroSession();
+    PomodoroTimer timer = new PomodoroTimer(session);
+
+    timer.start();
+
+    timer.elapse(Duration.ofMinutes(5));
+
+    timer.pause();
+
+    timer.elapse(Duration.ofMinutes(5));
+
+    timer.resume();
+
+    timer.elapse(Duration.ofMinutes(5));
+
+    assertEquals(
+            Duration.ofMinutes(15),
+            timer.getRemainingTime()
+    );
+}
+
+@Test
+void shouldCountdownShortBreakAfterUserStartsIt() {
+
+    PomodoroSession session = new PomodoroSession();
+    PomodoroTimer timer = new PomodoroTimer(session);
+
+    timer.start();
+
+    timer.elapse(Duration.ofMinutes(25));
+
+    assertEquals(
+            PomodoroPhase.SHORT_BREAK,
+            session.getPhase()
+    );
+
+    assertEquals(
+            PomodoroStatus.IDLE,
+            session.getStatus()
+    );
+
+    timer.start();
+
+    timer.elapse(Duration.ofMinutes(2));
+
+    assertEquals(
+            Duration.ofMinutes(3),
+            timer.getRemainingTime()
+    );
+
+    assertEquals(
+            PomodoroStatus.RUNNING,
+            session.getStatus()
+    );
+}
+
+@Test
+void shouldProvideConsistentSnapshot() {
+
+    PomodoroSession session = new PomodoroSession();
+    PomodoroTimer timer = new PomodoroTimer(session);
+
+    timer.start();
+
+    timer.elapse(Duration.ofMinutes(10));
+
+    PomodoroSnapshot snapshot = timer.snapshot();
+
+    assertEquals(
+            PomodoroPhase.FOCUS,
+            snapshot.phase()
+    );
+
+    assertEquals(
+            PomodoroStatus.RUNNING,
+            snapshot.status()
+    );
+
+    assertEquals(
+            0,
+            snapshot.completedFocusCycles()
+    );
+
+    assertEquals(
+            Duration.ofMinutes(15),
+            snapshot.remainingTime()
+    );
+}
+
 }
