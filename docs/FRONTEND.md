@@ -109,3 +109,16 @@ JavaFX   → apresentação e interação
 Introduzir JavaFX sem alterar o motor do Pomodoro já validado.
 
 A primeira entrega será uma janela mínima executável.
+
+---
+
+# BLOCO 10 — Fundação JavaFX
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi adicionado JavaFX ao projeto Maven e criada a primeira aplicação gráfica:
+
+```text
+FocusFlowApp
