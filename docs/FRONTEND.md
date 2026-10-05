@@ -6,6 +6,7 @@ Este documento registra as decisões, implementações, testes e aprendizados re
 
 A lógica principal do Pomodoro já foi construída e validada anteriormente.
 
+
 A partir desta etapa, o objetivo é transformar o motor existente em uma aplicação desktop visual utilizando JavaFX.
 
 ---
@@ -140,3 +141,27 @@ FOCUS
 25:00
 IDLE
 Ciclos concluídos: 0
+
+---
+
+# BLOCO 12 — Controles visuais
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foram adicionados controles visuais para:
+
+- iniciar;
+- pausar;
+- continuar;
+- resetar.
+
+Os botões executam comandos diretamente no `PomodoroTimer` e atualizam a interface utilizando um novo `PomodoroSnapshot`.
+
+Os botões também são habilitados ou desabilitados conforme o estado atual:
+
+```text
+IDLE    → Iniciar
+RUNNING → Pausar
+PAUSED  → Continuar
