@@ -1566,3 +1566,289 @@ Isso permite que os testes simulem minutos ou horas em milissegundos de execuç�
 **BLOCO 07 — Relógio real de 1 segundo.**
 
 O próximo passo será criar uma camada responsável por gerar ticks reais de tempo e conectá-la ao `PomodoroTimer`, sem mover essa responsabilidade para o domínio.
+
+---
+
+# BLOCO 07 — Relógio real de 1 segundo
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Adicionar uma camada responsável pela passagem real do tempo sem colocar threads ou agendamento dentro das regras do domínio.
+
+## Problema identificado
+
+O `PomodoroTimer` já sabia processar tempo decorrido:
+
+```java
+timer.elapse(Duration.ofSeconds(1));
+```
+
+Porém ainda não existia nenhum componente responsável por produzir esses pulsos automaticamente durante a execução real do aplicativo.
+
+Uma alternativa seria colocar um `ScheduledExecutorService` diretamente dentro de `PomodoroSession` ou `PomodoroTimer`.
+
+Essa abordagem foi descartada porque misturaria:
+
+```text
+regras do Pomodoro
++
+controle do tempo restante
++
+infraestrutura de threads
+```
+
+## DEC-006 — Relógio real como infraestrutura
+
+**Data:** 05/10/2026
+
+**Decisão:**
+
+Criar uma classe separada:
+
+```text
+PomodoroClock
+```
+
+responsável exclusivamente por gerar um tick a cada segundo.
+
+Arquitetura:
+
+```text
+ScheduledExecutorService
+          │
+          │ 1 segundo
+          ▼
+   PomodoroClock
+          │
+          ▼
+   PomodoroTimer
+          │
+          ▼
+  PomodoroSession
+```
+
+## Responsabilidades
+
+### `PomodoroSession`
+
+Mantém as regras do Pomodoro.
+
+### `PomodoroTimer`
+
+Mantém o tempo restante e processa tempo decorrido.
+
+### `PomodoroClock`
+
+Produz a passagem real do tempo.
+
+## Estratégia de thread
+
+Foi utilizado:
+
+```java
+ScheduledExecutorService
+```
+
+com uma única thread chamada:
+
+```text
+focusflow-pomodoro-clock
+```
+
+A thread foi configurada como:
+
+```text
+daemon
+```
+
+para não impedir o encerramento da aplicação caso seja a única thread restante.
+
+## Tick
+
+O intervalo utilizado pelo relógio é:
+
+```java
+Duration.ofSeconds(1)
+```
+
+O método:
+
+```java
+tick()
+```
+
+permaneceu com visibilidade de pacote.
+
+### Motivo
+
+A aplicação não precisa disparar ticks manualmente.
+
+Porém os testes localizados no mesmo pacote conseguem chamar:
+
+```java
+clock.tick();
+```
+
+sem esperar um segundo real.
+
+Isso permite testar a lógica sem introduzir:
+
+```java
+Thread.sleep(...)
+```
+
+nos testes.
+
+## Controle do relógio
+
+Foram implementados:
+
+```text
+start()
+stop()
+isRunning()
+close()
+```
+
+`PomodoroClock` também implementa:
+
+```java
+AutoCloseable
+```
+
+permitindo uso seguro em:
+
+```java
+try (PomodoroClock clock = new PomodoroClock(timer)) {
+    ...
+}
+```
+
+## Testes criados
+
+Arquivo:
+
+```text
+PomodoroClockTest.java
+```
+
+Foram validados:
+
+1. um tick reduz exatamente um segundo;
+2. o tempo não diminui quando o Pomodoro está pausado;
+3. ticks suficientes concluem o foco;
+4. o relógio pode ser iniciado e parado.
+
+## Configuração reduzida para testes
+
+Para evitar testes demorados, foi usada uma configuração como:
+
+```text
+FOCUS        3 segundos
+SHORT_BREAK  2 segundos
+LONG_BREAK   4 segundos
+CICLOS       4
+```
+
+Essa configuração existe somente no teste.
+
+As configurações padrão do produto permanecem:
+
+```text
+FOCUS        25 minutos
+SHORT_BREAK   5 minutos
+LONG_BREAK   15 minutos
+```
+
+## Validação completa
+
+Comando:
+
+```bash
+mvn test
+```
+
+Resultados:
+
+```text
+PomodoroClockTest
+Tests run: 4
+
+PomodoroTimerTest
+Tests run: 7
+
+PomodoroSessionTest
+Tests run: 9
+```
+
+Total:
+
+```text
+Tests run: 20
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+```
+
+Tempo total:
+
+```text
+4.775 s
+```
+
+## Estrutura atual
+
+```text
+pomodoro/
+├── PomodoroClock.java
+├── PomodoroConfig.java
+├── PomodoroPhase.java
+├── PomodoroSession.java
+├── PomodoroStatus.java
+└── PomodoroTimer.java
+```
+
+Testes:
+
+```text
+pomodoro/
+├── PomodoroClockTest.java
+├── PomodoroSessionTest.java
+└── PomodoroTimerTest.java
+```
+
+## Decisão adiada
+
+O relógio utiliza uma thread própria.
+
+Quando JavaFX for introduzido, a interface gráfica também possuirá sua própria thread.
+
+A forma segura de atualizar a interface a partir do relógio será decidida somente quando essa necessidade existir.
+
+Não será antecipada complexidade relacionada à GUI neste momento.
+
+## Conclusão
+
+O FocusFlow agora possui:
+
+```text
+regras do Pomodoro
+        +
+controle de tempo
+        +
+relógio real
+```
+
+mantidos em responsabilidades separadas e cobertos por testes automatizados.
+
+## Próximo passo
+
+**BLOCO 08 — Primeira execução visível no terminal.**
+
+Antes de introduzir JavaFX, será criada uma pequena aplicação executável que permita observar o FocusFlow funcionando em tempo real pelo terminal.
