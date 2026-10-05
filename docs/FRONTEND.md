@@ -122,3 +122,21 @@ Foi adicionado JavaFX ao projeto Maven e criada a primeira aplicação gráfica:
 
 ```text
 FocusFlowApp
+
+---
+
+# BLOCO 11 — Exibição do estado do Pomodoro
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A interface JavaFX passou a consumir um `PomodoroSnapshot` real do motor.
+
+Foram exibidos:
+
+```text
+FOCUS
+25:00
+IDLE
+Ciclos concluídos: 0
