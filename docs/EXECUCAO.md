@@ -1377,3 +1377,192 @@ O domínio continua independente de:
 **BLOCO 06 — Motor de contagem regressiva.**
 
 O próximo problema será implementar a passagem real do tempo sem criar testes que precisem esperar 25 minutos para terminar.
+---
+
+# BLOCO 06 — Motor de contagem regressiva
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Criar um motor de contagem regressiva testável sem depender da passagem real do tempo.
+
+O objetivo foi evitar testes que precisassem esperar 25 minutos para validar um Pomodoro completo.
+
+## Problema identificado
+
+Uma implementação ingênua poderia utilizar:
+
+```java
+Thread.sleep(...)
+```
+
+ou criar diretamente um scheduler dentro de `PomodoroSession`.
+
+Isso traria dois problemas:
+
+1. testes lentos;
+2. acoplamento entre regras de domínio e infraestrutura de tempo.
+
+## DEC-005 — O domínio recebe a passagem do tempo
+
+**Data:** 05/10/2026
+
+**Decisão:**
+
+O motor não cria o relógio real.
+
+Ele recebe explicitamente quanto tempo passou.
+
+Exemplo:
+
+```java
+timer.elapse(Duration.ofSeconds(1));
+```
+
+ou, em testes:
+
+```java
+timer.elapse(Duration.ofMinutes(25));
+```
+
+## Motivo
+
+Isso permite testar imediatamente um intervalo inteiro sem esperar 25 minutos.
+
+Também mantém separado:
+
+```text
+REGRAS DO POMODORO
+        ≠
+INFRAESTRUTURA DE RELÓGIO
+```
+
+## Classe criada
+
+```text
+PomodoroTimer.java
+```
+
+Responsabilidades:
+
+- manter o tempo restante;
+- iniciar sessão;
+- pausar;
+- continuar;
+- receber tempo decorrido;
+- concluir automaticamente o intervalo quando o tempo termina;
+- restaurar a duração correta da próxima fase;
+- reiniciar a sessão.
+
+## Regra de tempo excedente
+
+Se faltarem:
+
+```text
+10 segundos
+```
+
+e o motor receber:
+
+```text
+15 segundos
+```
+
+os 5 segundos excedentes não são aplicados ao próximo intervalo.
+
+Motivo:
+
+Ao finalizar um foco, a próxima fase fica:
+
+```text
+SHORT_BREAK + IDLE
+```
+
+A pausa só inicia quando o usuário executar explicitamente o comando de início.
+
+Essa decisão mantém coerência com a DEC-002.
+
+## Testes criados
+
+Arquivo:
+
+```text
+PomodoroTimerTest.java
+```
+
+Foram testados:
+
+1. duração inicial do foco;
+2. redução do tempo enquanto a sessão está rodando;
+3. pausa impedindo redução do tempo;
+4. mudança para pausa curta ao finalizar o foco;
+5. tempo ignorado enquanto a sessão está ociosa;
+6. rejeição de duração inválida;
+7. reset restaurando a sessão inicial.
+
+## Validação
+
+Comando:
+
+```bash
+mvn test
+```
+
+Resultado:
+
+```text
+PomodoroTimerTest:
+Tests run: 7
+Failures: 0
+Errors: 0
+
+PomodoroSessionTest:
+Tests run: 9
+Failures: 0
+Errors: 0
+```
+
+Total:
+
+```text
+Tests run: 16
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+```
+
+## Estrutura atual
+
+```text
+pomodoro/
+├── PomodoroConfig.java
+├── PomodoroPhase.java
+├── PomodoroSession.java
+├── PomodoroStatus.java
+└── PomodoroTimer.java
+```
+
+Testes:
+
+```text
+pomodoro/
+├── PomodoroSessionTest.java
+└── PomodoroTimerTest.java
+```
+
+## Conclusão
+
+O FocusFlow agora possui um motor de contagem regressiva desacoplado do relógio real.
+
+Isso permite que os testes simulem minutos ou horas em milissegundos de execução.
+
+## Próximo passo
+
+**BLOCO 07 — Relógio real de 1 segundo.**
+
+O próximo passo será criar uma camada responsável por gerar ticks reais de tempo e conectá-la ao `PomodoroTimer`, sem mover essa responsabilidade para o domínio.
