@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.time.Duration;
 
 class PomodoroSessionTest {
 
@@ -96,4 +97,62 @@ void shouldMoveToLongBreakAfterFourFocusCycles() {
     assertEquals(PomodoroPhase.LONG_BREAK, session.getPhase());
     assertEquals(PomodoroStatus.IDLE, session.getStatus());
  }
+
+@Test
+void shouldUseDefaultFocusDuration() {
+
+    PomodoroSession session = new PomodoroSession();
+
+    assertEquals(
+            Duration.ofMinutes(25),
+            session.getCurrentDuration()
+    );
+}
+
+@Test
+void shouldUseShortBreakDurationAfterFocus() {
+
+    PomodoroSession session = new PomodoroSession();
+
+    session.start();
+    session.completeCurrentInterval();
+
+    assertEquals(
+            PomodoroPhase.SHORT_BREAK,
+            session.getPhase()
+    );
+
+    assertEquals(
+            Duration.ofMinutes(5),
+            session.getCurrentDuration()
+    );
+}
+
+@Test
+void shouldUseLongBreakDurationAfterFourFocusCycles() {
+
+    PomodoroSession session = new PomodoroSession();
+
+    for (int cycle = 1; cycle <= 4; cycle++) {
+
+        session.start();
+        session.completeCurrentInterval();
+
+        if (cycle < 4) {
+            session.start();
+            session.completeCurrentInterval();
+        }
+    }
+
+    assertEquals(
+            PomodoroPhase.LONG_BREAK,
+            session.getPhase()
+    );
+
+    assertEquals(
+            Duration.ofMinutes(15),
+            session.getCurrentDuration()
+    );
+}
+
 }

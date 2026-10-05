@@ -1133,3 +1133,247 @@ Antes de implementar a contagem regressiva real, será definido onde devem ficar
 - 15 a 20 minutos de pausa longa.
 
 O objetivo será evitar números mágicos espalhados pelo código e manter as regras configuráveis e testáveis.
+---
+
+# BLOCO 05 — Configuração das durações do Pomodoro
+
+**Data:** 05/10/2026
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Retirar valores temporais e regras numéricas de dentro do motor da sessão e criar uma configuração explícita para o Pomodoro.
+
+A intenção foi evitar números mágicos espalhados pelo domínio antes da implementação do cronômetro real.
+
+## Problema identificado
+
+A regra da pausa longa utilizava diretamente:
+
+```java
+completedFocusCycles % 4
+```
+
+Isso fazia com que o valor `4` ficasse incorporado à implementação de `PomodoroSession`.
+
+As durações de foco e pausas também precisariam existir em algum lugar quando o cronômetro fosse implementado.
+
+Espalhar valores como:
+
+```text
+25
+5
+15
+4
+```
+
+por várias classes dificultaria manutenção, testes e futuras configurações.
+
+## DEC-003 — Centralizar a configuração do Pomodoro
+
+**Data:** 05/10/2026
+
+**Contexto:**
+
+O domínio precisava conhecer:
+
+- duração do foco;
+- duração da pausa curta;
+- duração da pausa longa;
+- quantidade de focos antes da pausa longa.
+
+**Decisão:**
+
+Criar o value object:
+
+```text
+PomodoroConfig
+```
+
+contendo:
+
+```text
+focusDuration
+shortBreakDuration
+longBreakDuration
+focusCyclesBeforeLongBreak
+```
+
+## DEC-004 — Representar tempo com `java.time.Duration`
+
+As durações passaram a utilizar:
+
+```java
+java.time.Duration
+```
+
+em vez de valores inteiros representando minutos.
+
+### Motivo
+
+Um valor como:
+
+```java
+25
+```
+
+não informa sua unidade.
+
+Poderia representar:
+
+- segundos;
+- minutos;
+- milissegundos.
+
+Já:
+
+```java
+Duration.ofMinutes(25)
+```
+
+expressa explicitamente a intenção do domínio.
+
+### Benefícios
+
+- elimina ambiguidade de unidade;
+- melhora legibilidade;
+- facilita testes;
+- permite futuras configurações em segundos sem alterar o modelo;
+- integra-se às APIs de tempo do Java.
+
+### Trade-off
+
+`Duration` é mais elaborado que um simples `int`, mas fornece uma representação mais segura do conceito de tempo.
+
+## Configuração padrão
+
+Foi definida inicialmente:
+
+```text
+FOCUS                    25 minutos
+SHORT_BREAK               5 minutos
+LONG_BREAK               15 minutos
+FOCUS CYCLES               4
+```
+
+A pausa longa permanece conceitualmente configurável entre 15 e 20 minutos.
+
+Para o MVP inicial, o padrão escolhido foi:
+
+```text
+15 minutos
+```
+
+A configuração visual pelo usuário ficará para uma etapa posterior.
+
+## Alteração em `PomodoroSession`
+
+Antes:
+
+```java
+if (completedFocusCycles % 4 == 0)
+```
+
+Depois:
+
+```java
+if (completedFocusCycles
+        % config.focusCyclesBeforeLongBreak() == 0)
+```
+
+Dessa forma, `PomodoroSession` deixou de possuir conhecimento direto sobre o número fixo de ciclos.
+
+## Consulta da duração atual
+
+Foi acrescentado:
+
+```java
+getCurrentDuration()
+```
+
+A duração retornada depende da fase atual:
+
+```text
+FOCUS       → focusDuration
+SHORT_BREAK → shortBreakDuration
+LONG_BREAK  → longBreakDuration
+```
+
+## Validação de regressão
+
+Após introduzir `PomodoroConfig`, os seis testes existentes foram executados antes da criação dos novos testes.
+
+Resultado:
+
+```text
+Tests run: 6
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+```
+
+Isso confirmou que a refatoração não quebrou as regras já existentes.
+
+## Novos testes
+
+Foram adicionados testes para validar:
+
+1. duração padrão do foco;
+2. duração da pausa curta após um foco;
+3. duração da pausa longa após quatro ciclos.
+
+Resultado final:
+
+```text
+Tests run: 9
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+```
+
+Tempo registrado:
+
+```text
+3.988 s
+```
+
+## Estrutura atual do domínio
+
+```text
+pomodoro/
+├── PomodoroConfig.java
+├── PomodoroPhase.java
+├── PomodoroSession.java
+└── PomodoroStatus.java
+```
+
+Testes:
+
+```text
+pomodoro/
+└── PomodoroSessionTest.java
+```
+
+## Conclusão
+
+As regras temporais deixaram de estar espalhadas pelo motor da sessão.
+
+O FocusFlow agora possui uma configuração explícita e tipada para representar as durações e a quantidade de ciclos antes da pausa longa.
+
+O domínio continua independente de:
+
+- interface gráfica;
+- JavaFX;
+- banco de dados;
+- relógio real.
+
+## Próximo passo
+
+**BLOCO 06 — Motor de contagem regressiva.**
+
+O próximo problema será implementar a passagem real do tempo sem criar testes que precisem esperar 25 minutos para terminar.
