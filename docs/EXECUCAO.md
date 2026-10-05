@@ -194,15 +194,25 @@ executa com sucesso.
 
 Construir sem GUI.
 
-Estados previstos:
+Modelagem definida:
+
+**Fases do Pomodoro:**
 
 ```text
-IDLE
 FOCUS
 SHORT_BREAK
 LONG_BREAK
+```
+
+**Status de execução:**
+
+```text
+IDLE
+RUNNING
 PAUSED
 ```
+
+A fase e o status são modelados separadamente para preservar o contexto do intervalo quando a sessão estiver pausada.
 
 Entregas:
 
@@ -575,6 +585,7 @@ Atualizar ferramentas sem necessidade adicionaria mudança e risco sem gerar val
 **Próximo passo**
 
 BLOCO 02 — criar a estrutura Maven mínima, validar o `pom.xml` e executar o primeiro `mvn test`.
+
 ---
 
 # BLOCO 02 — Fundação Maven
@@ -594,6 +605,7 @@ Criar uma estrutura mínima e reproduzível para o FocusFlow antes da implementa
 - Git: 2.43.0
 - Sistema: Ubuntu 24.04 / WSL2
 - Kernel: 6.18.33.2-microsoft-standard-wsl2
+- Diretório do projeto: `/home/aguin/projetos/focusflow`
 
 ## Estrutura inicial
 
@@ -607,6 +619,104 @@ focusflow/
 └── src/
     ├── main/java/io/github/aguinaldo1/focusflow/
     └── test/java/io/github/aguinaldo1/focusflow/
+```
+
+## Decisões tomadas
+
+### Maven como ferramenta de build
+
+Maven foi mantido como ferramenta de build por já estar disponível no ambiente e ser suficiente para compilação, testes e gerenciamento de dependências.
+
+### Java 21
+
+Foi mantido o Java 21 já instalado no ambiente.
+
+Não houve atualização de versão apenas por existir uma versão mais recente.
+
+**Motivo:** evitar mudança e risco sem necessidade concreta para o MVP.
+
+### Dependências mínimas
+
+JavaFX, SQLite e frameworks adicionais não foram adicionados durante a fundação.
+
+A decisão foi introduzir dependências somente quando uma funcionalidade real passar a exigir seu uso.
+
+### Diretórios vazios
+
+Os diretórios de código foram criados antes das primeiras classes Java.
+
+Como Git não versiona diretórios vazios, foi decidido não criar arquivos `.gitkeep` apenas para forçar sua presença no repositório.
+
+### Arquivos de build
+
+O diretório Maven:
+
+```text
+target/
+```
+
+foi incluído no `.gitignore`.
+
+Validação:
+
+```text
+!! target/
+```
+
+Isso confirmou que os artefatos locais de build não seriam enviados ao GitHub.
+
+## Validação Maven
+
+Comando executado:
+
+```bash
+mvn test
+```
+
+Resultado:
+
+```text
+[INFO] No tests to run.
+[INFO] BUILD SUCCESS
+[INFO] Total time: 19.242 s
+```
+
+Neste estágio ainda não existiam testes automatizados, portanto `No tests to run` era o comportamento esperado.
+
+A execução validou:
+
+- leitura do `pom.xml`;
+- compatibilidade com Java 21;
+- funcionamento do Maven;
+- ciclo básico de build.
+
+## Primeiro commit
+
+```text
+3e11ac6 chore: inicia estrutura do projeto FocusFlow
+```
+
+Após o commit:
+
+```text
+On branch main
+nothing to commit, working tree clean
+```
+
+## Commit de documentação
+
+Após registrar a validação da fundação:
+
+```text
+3ccc6bc docs: registra validação da fundação Maven
+```
+
+## Conclusão
+
+A fundação técnica do FocusFlow ficou funcional, reproduzível e versionada.
+
+O projeto estava pronto para ser publicado em um repositório remoto antes do início das regras de domínio.
+
 ---
 
 # BLOCO 03 — Publicação no GitHub
@@ -623,6 +733,87 @@ Publicar a fundação técnica do FocusFlow em um repositório remoto, preservan
 
 ```text
 git@github.com:aguinaldo1/focusflow.git
+```
+
+## Estratégia de autenticação
+
+Foi utilizado SSH para comunicação com o GitHub.
+
+A autenticação SSH já estava funcional, portanto não houve motivo para migrar para HTTPS.
+
+Validação:
+
+```text
+origin  git@github.com:aguinaldo1/focusflow.git (fetch)
+origin  git@github.com:aguinaldo1/focusflow.git (push)
+```
+
+## Primeiro push
+
+Comando executado:
+
+```bash
+git push -u origin main
+```
+
+Resultado:
+
+```text
+[new branch] main -> main
+branch 'main' set up to track 'origin/main'
+```
+
+A opção `-u` configurou a branch local `main` para rastrear `origin/main`.
+
+## Validação do rastreamento
+
+Comando:
+
+```bash
+git branch -vv
+```
+
+Resultado:
+
+```text
+* main 3ccc6bc [origin/main] docs: registra validação da fundação Maven
+```
+
+Estado final após a publicação:
+
+```text
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+```
+
+## Commit de documentação
+
+Após registrar a publicação inicial:
+
+```text
+335105d docs: registra publicação inicial no GitHub
+```
+
+## Conclusão
+
+O repositório local e o repositório remoto passaram a estar sincronizados.
+
+A partir deste ponto, cada incremento validado do FocusFlow pode seguir o fluxo:
+
+```text
+implementar
+↓
+testar
+↓
+documentar
+↓
+commit
+↓
+push
+```
+
 ---
 
 # BLOCO 04 — Modelagem inicial do motor Pomodoro
@@ -635,12 +826,41 @@ git@github.com:aguinaldo1/focusflow.git
 
 Criar o primeiro domínio funcional do FocusFlow antes da implementação do cronômetro real e da interface gráfica.
 
-## Decisão arquitetural
+O foco deste bloco foi representar corretamente as regras e transições de uma sessão Pomodoro.
 
-Foi decidido separar:
+## Problema de modelagem
 
-- a fase atual do Pomodoro;
-- o estado de execução.
+Uma primeira possibilidade seria representar tudo em um único estado:
+
+```text
+IDLE
+FOCUS
+SHORT_BREAK
+LONG_BREAK
+PAUSED
+```
+
+Essa abordagem apresenta uma ambiguidade.
+
+Ao entrar em `PAUSED`, o sistema deixaria de expressar diretamente qual intervalo estava pausado:
+
+- foco;
+- pausa curta;
+- pausa longa.
+
+## DEC-001 — Separar fase e status de execução
+
+**Data:** 05/10/2026
+
+**Contexto:** era necessário representar tanto o tipo do intervalo quanto a condição atual da execução.
+
+**Opções consideradas:**
+
+1. um único enum contendo todas as combinações;
+2. um estado `PAUSED` com armazenamento adicional do estado anterior;
+3. separar fase e status de execução.
+
+**Decisão:** separar fase e status.
 
 ### Fases
 
@@ -648,3 +868,268 @@ Foi decidido separar:
 FOCUS
 SHORT_BREAK
 LONG_BREAK
+```
+
+### Status
+
+```text
+IDLE
+RUNNING
+PAUSED
+```
+
+Isso permite representar situações como:
+
+```text
+phase  = FOCUS
+status = PAUSED
+```
+
+ou:
+
+```text
+phase  = SHORT_BREAK
+status = RUNNING
+```
+
+**Benefício:** o sistema preserva o contexto sem precisar criar estados artificiais como:
+
+```text
+PAUSED_FOCUS
+PAUSED_SHORT_BREAK
+PAUSED_LONG_BREAK
+```
+
+**Trade-off:** a sessão passa a manter duas propriedades relacionadas em vez de apenas uma.
+
+## Dependência de testes
+
+O projeto passou a utilizar JUnit 5 para testes automatizados.
+
+Versão configurada:
+
+```text
+JUnit 5.11.4
+```
+
+Também foi configurado o Maven Surefire Plugin para execução dos testes.
+
+## Estrutura criada
+
+```text
+src/main/java/io/github/aguinaldo1/focusflow/pomodoro/
+├── PomodoroPhase.java
+├── PomodoroSession.java
+└── PomodoroStatus.java
+
+src/test/java/io/github/aguinaldo1/focusflow/pomodoro/
+└── PomodoroSessionTest.java
+```
+
+## Responsabilidades
+
+### `PomodoroPhase`
+
+Representa o tipo do intervalo atual:
+
+```text
+FOCUS
+SHORT_BREAK
+LONG_BREAK
+```
+
+### `PomodoroStatus`
+
+Representa a condição de execução:
+
+```text
+IDLE
+RUNNING
+PAUSED
+```
+
+### `PomodoroSession`
+
+Responsável pelas regras de transição da sessão.
+
+Comportamentos iniciais:
+
+- iniciar;
+- pausar;
+- continuar;
+- concluir intervalo;
+- reiniciar;
+- contabilizar ciclos de foco concluídos.
+
+## Regras implementadas
+
+A sessão:
+
+- nasce em `FOCUS`;
+- nasce com status `IDLE`;
+- começa com zero ciclos de foco concluídos;
+- pode iniciar apenas quando estiver `IDLE`;
+- pode pausar apenas quando estiver `RUNNING`;
+- pode continuar apenas quando estiver `PAUSED`;
+- só pode concluir um intervalo quando estiver `RUNNING`.
+
+Após um foco concluído:
+
+```text
+FOCUS
+↓
+SHORT_BREAK
+```
+
+Após uma pausa curta concluída:
+
+```text
+SHORT_BREAK
+↓
+FOCUS
+```
+
+Após o quarto foco concluído:
+
+```text
+FOCUS 4
+↓
+LONG_BREAK
+```
+
+## DEC-002 — Próximo intervalo não inicia automaticamente
+
+**Data:** 05/10/2026
+
+**Contexto:** ao terminar um intervalo, era necessário decidir se o próximo deveria começar imediatamente.
+
+**Decisão inicial:** a fase muda, mas o status volta para `IDLE`.
+
+Exemplo:
+
+```text
+FOCUS concluído
+↓
+SHORT_BREAK + IDLE
+```
+
+O usuário precisa iniciar explicitamente o próximo intervalo.
+
+**Motivo inicial:** evitar que uma pausa ou novo foco seja iniciado sem que o usuário esteja preparado.
+
+**Trade-off:** isso cria uma ação adicional para o usuário.
+
+**Hipótese a validar com uso real:** o início manual pode ser mais controlável, mas também pode gerar cliques desnecessários.
+
+Essa decisão poderá ser alterada posteriormente com base no uso real do produto.
+
+## Testes automatizados
+
+Foram implementados testes para verificar:
+
+1. estado inicial da sessão;
+2. início, pausa e continuação;
+3. transição de foco para pausa curta;
+4. bloqueio de pausa em sessão ociosa;
+5. retorno ao foco após pausa curta;
+6. pausa longa após quatro ciclos de foco.
+
+Comando executado:
+
+```bash
+mvn test
+```
+
+Resultado:
+
+```text
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+Tempo registrado:
+
+```text
+3.648 s
+```
+
+## Evidência de comportamento
+
+O fluxo principal validado pelos testes foi:
+
+```text
+FOCO 1
+↓
+PAUSA CURTA
+↓
+FOCO 2
+↓
+PAUSA CURTA
+↓
+FOCO 3
+↓
+PAUSA CURTA
+↓
+FOCO 4
+↓
+PAUSA LONGA
+```
+
+## Commit
+
+O primeiro domínio funcional foi versionado no commit:
+
+```text
+e45f947 feat: implementa motor inicial do Pomodoro
+```
+
+O commit foi publicado com sucesso em `origin/main`.
+
+Estado após o push:
+
+```text
+e45f947 (HEAD -> main, origin/main) feat: implementa motor inicial do Pomodoro
+335105d docs: registra publicação inicial no GitHub
+3ccc6bc docs: registra validação da fundação Maven
+3e11ac6 chore: inicia estrutura do projeto FocusFlow
+```
+
+e:
+
+```text
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+```
+
+## Correção documental posterior
+
+Após o BLOCO 04 foi identificado que algumas cercas de código Markdown do documento `EXECUCAO.md` haviam ficado abertas durante a edição manual.
+
+O problema era apenas documental e não afetava o código Java, os testes ou o build.
+
+Este arquivo foi revisado integralmente para:
+
+- fechar corretamente os blocos de código;
+- restaurar a separação entre os BLOCOS 02, 03 e 04;
+- manter consistência entre o roadmap e a decisão de separar fase e status;
+- preservar as evidências reais já coletadas.
+
+## Conclusão
+
+O FocusFlow passou a possuir um motor inicial de domínio independente de interface gráfica e de cronômetro real.
+
+As principais transições do Pomodoro estão representadas em código e cobertas por testes automatizados.
+
+## Próximo passo
+
+**BLOCO 05 — Configuração das durações do Pomodoro.**
+
+Antes de implementar a contagem regressiva real, será definido onde devem ficar as durações de:
+
+- 25 minutos de foco;
+- 5 minutos de pausa curta;
+- 15 a 20 minutos de pausa longa.
+
+O objetivo será evitar números mágicos espalhados pelo código e manter as regras configuráveis e testáveis.
