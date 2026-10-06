@@ -266,3 +266,41 @@ WSL_DISTRO_NAME=Ubuntu-24.04
 Tests run: 27
 Failures: 0
 Errors: 0
+
+---
+
+# BLOCO 16B — Integração opcional com System Tray
+
+**Status:** ✅ Implementado / ⏳ validação nativa Windows pendente
+
+## Implementação
+
+Foi criada a classe `SystemTrayIntegration`, responsável pela integração opcional com a bandeja do sistema.
+
+Quando o ambiente oferece `SystemTray`, o FocusFlow poderá:
+
+- ocultar a janela ao fechar;
+- permanecer executando em segundo plano;
+- restaurar a janela pelo ícone do tray;
+- abrir pelo menu `Abrir FocusFlow`;
+- encerrar pelo menu `Sair`.
+
+A comunicação entre AWT e JavaFX utiliza `Platform.runLater()` para preservar a separação entre as threads das duas tecnologias.
+
+## Validação no WSL
+
+No WSL2/WSLg o System Tray não está disponível.
+
+Mesmo assim, foram validados:
+
+- inicialização normal do FocusFlow;
+- funcionamento do Pomodoro;
+- fechamento normal da aplicação;
+- fallback sem System Tray;
+- 27 testes permanecem passando.
+
+```text
+Tests run: 27
+Failures: 0
+Errors: 0
+BUILD SUCCESS

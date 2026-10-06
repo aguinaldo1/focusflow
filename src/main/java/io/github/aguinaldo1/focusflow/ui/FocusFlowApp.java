@@ -1,5 +1,6 @@
 package io.github.aguinaldo1.focusflow.ui;
 
+import io.github.aguinaldo1.focusflow.desktop.SystemTrayIntegration;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroClock;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSession;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
@@ -9,20 +10,20 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.awt.AWTException;
 import java.time.Duration;
 
 public final class FocusFlowApp extends Application {
@@ -30,6 +31,7 @@ public final class FocusFlowApp extends Application {
     private PomodoroTimer timer;
     private PomodoroClock clock;
     private Timeline uiRefreshTimeline;
+    private SystemTrayIntegration systemTrayIntegration;
 
     private Label phaseLabel;
     private Label timeLabel;
@@ -53,6 +55,9 @@ public final class FocusFlowApp extends Application {
 
         clock =
                 new PomodoroClock(timer);
+
+        systemTrayIntegration =
+                new SystemTrayIntegration();
 
         Label titleLabel =
                 new Label("FOCUSFLOW");
@@ -99,10 +104,10 @@ public final class FocusFlowApp extends Application {
         );
 
         Label shortcutsLabel =
-        new Label(
-                "Ctrl+I iniciar  •  Ctrl+P pausar  •  "
-                        + "Ctrl+C continuar  •  Ctrl+R resetar"
-        );
+                new Label(
+                        "Ctrl+I iniciar  •  Ctrl+P pausar  •  "
+                                + "Ctrl+C continuar  •  Ctrl+R resetar"
+                );
 
         shortcutsLabel.setStyle(
                 "-fx-font-size: 9px;"
@@ -172,6 +177,7 @@ public final class FocusFlowApp extends Application {
         );
 
         root.setAlignment(Pos.CENTER);
+
         root.setPadding(
                 new Insets(14)
         );
@@ -192,59 +198,107 @@ public final class FocusFlowApp extends Application {
         stage.setAlwaysOnTop(true);
         stage.setResizable(false);
         stage.setScene(scene);
+
+        configureSystemTray(stage);
+
         stage.show();
     }
 
+    private void configureSystemTray(
+            Stage stage
+    ) {
+
+        try {
+
+            boolean installed =
+                    systemTrayIntegration.install(
+                            () -> Platform.runLater(
+                                    () -> restoreWindow(stage)
+                            ),
+                            () -> Platform.runLater(
+                                    Platform::exit
+                            )
+                    );
+
+            if (installed) {
+
+                Platform.setImplicitExit(false);
+
+                stage.setOnCloseRequest(event -> {
+                    event.consume();
+                    stage.hide();
+                });
+            }
+
+        } catch (AWTException exception) {
+
+            feedbackLabel.setText(
+                    "System Tray indisponível."
+            );
+        }
+    }
+
+    private void restoreWindow(
+            Stage stage
+    ) {
+
+        if (!stage.isShowing()) {
+            stage.show();
+        }
+
+        stage.setIconified(false);
+        stage.toFront();
+        stage.requestFocus();
+    }
+
     private void configureKeyboardShortcuts(
-        Scene scene
-) {
+            Scene scene
+    ) {
 
-    scene.getAccelerators().put(
-            new KeyCodeCombination(
-                    KeyCode.I,
-                    KeyCombination.CONTROL_DOWN
-            ),
-            () -> executeAction(
-                    timer::start,
-                    "Intervalo iniciado."
-            )
-    );
+        scene.getAccelerators().put(
+                new KeyCodeCombination(
+                        KeyCode.I,
+                        KeyCombination.CONTROL_DOWN
+                ),
+                () -> executeAction(
+                        timer::start,
+                        "Intervalo iniciado."
+                )
+        );
 
-    scene.getAccelerators().put(
-            new KeyCodeCombination(
-                    KeyCode.P,
-                    KeyCombination.CONTROL_DOWN
-            ),
-            () -> executeAction(
-                    timer::pause,
-                    "Intervalo pausado."
-            )
-    );
+        scene.getAccelerators().put(
+                new KeyCodeCombination(
+                        KeyCode.P,
+                        KeyCombination.CONTROL_DOWN
+                ),
+                () -> executeAction(
+                        timer::pause,
+                        "Intervalo pausado."
+                )
+        );
 
-    scene.getAccelerators().put(
-            new KeyCodeCombination(
-                    KeyCode.C,
-                    KeyCombination.CONTROL_DOWN
-            ),
-            () -> executeAction(
-                    timer::resume,
-                    "Intervalo retomado."
-            )
-    );
+        scene.getAccelerators().put(
+                new KeyCodeCombination(
+                        KeyCode.C,
+                        KeyCombination.CONTROL_DOWN
+                ),
+                () -> executeAction(
+                        timer::resume,
+                        "Intervalo retomado."
+                )
+        );
 
-    scene.getAccelerators().put(
-            new KeyCodeCombination(
-                    KeyCode.R,
-                    KeyCombination.CONTROL_DOWN
-            ),
-            () -> executeAction(
-                    timer::reset,
-                    "Pomodoro reiniciado."
-            )
-    );
-}
-
-
+        scene.getAccelerators().put(
+                new KeyCodeCombination(
+                        KeyCode.R,
+                        KeyCombination.CONTROL_DOWN
+                ),
+                () -> executeAction(
+                        timer::reset,
+                        "Pomodoro reiniciado."
+                )
+        );
+    }
 
     private void startUiRefresh() {
 
@@ -362,6 +416,10 @@ public final class FocusFlowApp extends Application {
 
         if (clock != null) {
             clock.close();
+        }
+
+        if (systemTrayIntegration != null) {
+            systemTrayIntegration.close();
         }
     }
 
