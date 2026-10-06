@@ -405,3 +405,34 @@ Operações disponíveis:
 completeObjective(...)
 markObjectiveNotFinished(...)
 discardObjective(...)
+
+---
+
+# BLOCO 18A — Fundação SQLite
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi adicionada persistência local com SQLite através do driver JDBC.
+
+Criado o `DatabaseManager`, responsável por:
+
+- abrir conexões SQLite;
+- inicializar o banco;
+- criar a tabela `objectives`;
+- permitir inicialização repetida sem apagar dados existentes.
+
+A estrutura inicial armazena:
+
+```text
+id
+name
+description
+status
+created_at
+closed_at
+pomodoro_phase
+pomodoro_status
+completed_focus_cycles
+remaining_seconds
