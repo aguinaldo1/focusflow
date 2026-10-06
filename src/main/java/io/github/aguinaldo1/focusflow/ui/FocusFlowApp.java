@@ -33,9 +33,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
@@ -48,14 +45,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public final class FocusFlowApp extends Application {
-
-    private static final double PROGRESS_RADIUS =
-            27.0;
-
-    private static final double PROGRESS_CIRCUMFERENCE =
-            2.0
-                    * Math.PI
-                    * PROGRESS_RADIUS;
 
     private ObjectiveManager objectiveManager;
 
@@ -81,9 +70,7 @@ public final class FocusFlowApp extends Application {
     private Label cyclesLabel;
     private Label feedbackLabel;
 
-    private Label progressPercentageLabel;
-    private Circle progressRing;
-    private StackPane progressDonut;
+    private ProgressDonut progressDonut;
 
     private Button addObjectiveButton;
 
@@ -654,99 +641,8 @@ public final class FocusFlowApp extends Application {
 
     private void createProgressDonut() {
 
-        Circle backgroundRing =
-                new Circle(
-                        PROGRESS_RADIUS
-                );
-
-        backgroundRing.setFill(
-                Color.TRANSPARENT
-        );
-
-        backgroundRing.setStroke(
-                Color.web(
-                        "#E2E8F0"
-                )
-        );
-
-        backgroundRing.setStrokeWidth(
-                5
-        );
-
-        progressRing =
-                new Circle(
-                        PROGRESS_RADIUS
-                );
-
-        progressRing.setFill(
-                Color.TRANSPARENT
-        );
-
-        progressRing.setStroke(
-                Color.web(
-                        "#4F46E5"
-                )
-        );
-
-        progressRing.setStrokeWidth(
-                5
-        );
-
-        progressRing.setStrokeLineCap(
-                StrokeLineCap.ROUND
-        );
-
-        progressRing
-                .getStrokeDashArray()
-                .setAll(
-                        PROGRESS_CIRCUMFERENCE,
-                        PROGRESS_CIRCUMFERENCE
-                );
-
-        progressRing.setStrokeDashOffset(
-                PROGRESS_CIRCUMFERENCE
-        );
-
-        progressRing.setRotate(
-                -90
-        );
-
-        progressPercentageLabel =
-                new Label(
-                        "0%"
-                );
-
-        progressPercentageLabel.setStyle(
-                "-fx-font-size: 11px;"
-                        + "-fx-font-weight: bold;"
-                        + "-fx-text-fill: #334155;"
-        );
-
         progressDonut =
-                new StackPane(
-                        backgroundRing,
-                        progressRing,
-                        progressPercentageLabel
-                );
-
-        progressDonut.setMinSize(
-                66,
-                66
-        );
-
-        progressDonut.setPrefSize(
-                66,
-                66
-        );
-
-        progressDonut.setMaxSize(
-                66,
-                66
-        );
-
-        progressDonut.setTranslateY(
-                -12
-        );
+                new ProgressDonut();
     }
 
     private void addObjective() {
@@ -1479,31 +1375,10 @@ public final class FocusFlowApp extends Application {
             int percentage
     ) {
 
-        int normalizedPercentage =
-                Math.max(
-                        0,
-                        Math.min(
-                                100,
-                                percentage
-                        )
+        progressDonut
+                .setProgressPercentage(
+                        percentage
                 );
-
-        progressPercentageLabel.setText(
-                normalizedPercentage
-                        + "%"
-        );
-
-        double offset =
-                PROGRESS_CIRCUMFERENCE
-                        * (
-                        1.0
-                                - normalizedPercentage
-                                / 100.0
-                );
-
-        progressRing.setStrokeDashOffset(
-                offset
-        );
     }
 
     private void updateTimerAppearance(
