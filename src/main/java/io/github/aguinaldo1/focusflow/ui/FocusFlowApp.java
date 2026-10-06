@@ -90,6 +90,7 @@ public final class FocusFlowApp extends Application {
     private Button completeObjectiveButton;
     private Button notFinishedObjectiveButton;
     private Button removeObjectiveButton;
+    private Button historyButton;
 
     private Button decreaseCyclesButton;
     private Button increaseCyclesButton;
@@ -115,6 +116,9 @@ public final class FocusFlowApp extends Application {
         createObjectiveControls();
         createPomodoroControls();
         createProgressDonut();
+        createHistoryControl(
+                stage
+        );
 
         HBox objectiveInput =
                 new HBox(
@@ -227,6 +231,16 @@ public final class FocusFlowApp extends Application {
                 Pos.CENTER
         );
 
+        HBox historyControls =
+                new HBox(
+                        6,
+                        historyButton
+                );
+
+        historyControls.setAlignment(
+                Pos.CENTER
+        );
+
         Label shortcutsLabel =
                 new Label(
                         "Ctrl+I iniciar  •  Ctrl+P pausar  •  "
@@ -248,6 +262,7 @@ public final class FocusFlowApp extends Application {
                         cycleAdjustment,
                         timerArea,
                         pomodoroControls,
+                        historyControls,
                         feedbackLabel,
                         shortcutsLabel
                 );
@@ -264,7 +279,7 @@ public final class FocusFlowApp extends Application {
                 new Scene(
                         root,
                         430,
-                        380
+                        410
                 );
 
         configureKeyboardShortcuts(
@@ -615,6 +630,25 @@ public final class FocusFlowApp extends Application {
 
         updateTimerAppearance(
                 null
+        );
+    }
+
+    private void createHistoryControl(
+            Stage stage
+    ) {
+
+        historyButton =
+                new Button(
+                        "Histórico"
+                );
+
+        historyButton.setOnAction(
+                event ->
+                        HistoryWindow.show(
+                                stage,
+                                objectiveManager
+                                        .getClosedObjectives()
+                        )
         );
     }
 

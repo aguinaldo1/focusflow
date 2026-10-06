@@ -1,13 +1,20 @@
 package io.github.aguinaldo1.focusflow.objective;
 
+import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSession;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
+import io.github.aguinaldo1.focusflow.pomodoro.PomodoroTimer;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ObjectiveManagerTest {
 
@@ -74,10 +81,11 @@ class ObjectiveManagerTest {
 
         assertThrows(
                 IllegalStateException.class,
-                () -> manager.addObjective(
-                        "Sexto objetivo",
-                        ""
-                )
+                () ->
+                        manager.addObjective(
+                                "Sexto objetivo",
+                                ""
+                        )
         );
     }
 
@@ -205,9 +213,10 @@ class ObjectiveManagerTest {
 
         assertThrows(
                 IllegalStateException.class,
-                () -> manager.selectObjective(
-                        javaObjective.getId()
-                )
+                () ->
+                        manager.selectObjective(
+                                javaObjective.getId()
+                        )
         );
     }
 
@@ -273,199 +282,297 @@ class ObjectiveManagerTest {
         );
     }
 
-	@Test
-void shouldCompleteSelectedObjectiveAndSelectNextActiveOne() {
+    @Test
+    void shouldCompleteSelectedObjectiveAndSelectNextActiveOne() {
 
-    ObjectiveManager manager =
-            new ObjectiveManager();
+        ObjectiveManager manager =
+                new ObjectiveManager();
 
-    Objective javaObjective =
-            manager.addObjective(
-                    "Curso Java",
-                    ""
-            );
+        Objective javaObjective =
+                manager.addObjective(
+                        "Curso Java",
+                        ""
+                );
 
-    Objective dockerObjective =
-            manager.addObjective(
-                    "Curso Docker",
-                    ""
-            );
+        Objective dockerObjective =
+                manager.addObjective(
+                        "Curso Docker",
+                        ""
+                );
 
-    javaObjective
-            .getTimer()
-            .start();
+        javaObjective
+                .getTimer()
+                .start();
 
-    manager.completeObjective(
-            javaObjective.getId()
-    );
+        manager.completeObjective(
+                javaObjective.getId()
+        );
 
-    assertEquals(
-            ObjectiveStatus.COMPLETED,
-            javaObjective.getStatus()
-    );
+        assertEquals(
+                ObjectiveStatus.COMPLETED,
+                javaObjective.getStatus()
+        );
 
-    assertEquals(
-            PomodoroStatus.PAUSED,
-            javaObjective
-                    .getTimer()
-                    .snapshot()
-                    .status()
-    );
+        assertEquals(
+                PomodoroStatus.PAUSED,
+                javaObjective
+                        .getTimer()
+                        .snapshot()
+                        .status()
+        );
 
-    assertSame(
-            dockerObjective,
-            manager.getSelectedObjective()
-                    .orElseThrow()
-    );
+        assertSame(
+                dockerObjective,
+                manager.getSelectedObjective()
+                        .orElseThrow()
+        );
 
-    assertEquals(
-            PomodoroStatus.IDLE,
-            dockerObjective
-                    .getTimer()
-                    .snapshot()
-                    .status()
-    );
-}
+        assertEquals(
+                PomodoroStatus.IDLE,
+                dockerObjective
+                        .getTimer()
+                        .snapshot()
+                        .status()
+        );
+    }
 
-@Test
-void shouldMarkObjectiveAsNotFinishedThroughManager() {
+    @Test
+    void shouldMarkObjectiveAsNotFinishedThroughManager() {
 
-    ObjectiveManager manager =
-            new ObjectiveManager();
+        ObjectiveManager manager =
+                new ObjectiveManager();
 
-    Objective objective =
-            manager.addObjective(
-                    "Estudar Kubernetes",
-                    ""
-            );
+        Objective objective =
+                manager.addObjective(
+                        "Estudar Kubernetes",
+                        ""
+                );
 
-    manager.markObjectiveNotFinished(
-            objective.getId()
-    );
+        manager.markObjectiveNotFinished(
+                objective.getId()
+        );
 
-    assertEquals(
-            ObjectiveStatus.NOT_FINISHED,
-            objective.getStatus()
-    );
-}
+        assertEquals(
+                ObjectiveStatus.NOT_FINISHED,
+                objective.getStatus()
+        );
+    }
 
-@Test
-void shouldDiscardObjectiveThroughManager() {
+    @Test
+    void shouldDiscardObjectiveThroughManager() {
 
-    ObjectiveManager manager =
-            new ObjectiveManager();
+        ObjectiveManager manager =
+                new ObjectiveManager();
 
-    Objective objective =
-            manager.addObjective(
-                    "Curso antigo",
-                    ""
-            );
+        Objective objective =
+                manager.addObjective(
+                        "Curso antigo",
+                        ""
+                );
 
-    manager.discardObjective(
-            objective.getId()
-    );
+        manager.discardObjective(
+                objective.getId()
+        );
 
-    assertEquals(
-            ObjectiveStatus.DISCARDED,
-            objective.getStatus()
-    );
-}
+        assertEquals(
+                ObjectiveStatus.DISCARDED,
+                objective.getStatus()
+        );
+    }
 
-@Test
-void shouldKeepCurrentSelectionWhenClosingAnotherObjective() {
+    @Test
+    void shouldKeepCurrentSelectionWhenClosingAnotherObjective() {
 
-    ObjectiveManager manager =
-            new ObjectiveManager();
+        ObjectiveManager manager =
+                new ObjectiveManager();
 
-    Objective javaObjective =
-            manager.addObjective(
-                    "Curso Java",
-                    ""
-            );
+        Objective javaObjective =
+                manager.addObjective(
+                        "Curso Java",
+                        ""
+                );
 
-    Objective dockerObjective =
-            manager.addObjective(
-                    "Curso Docker",
-                    ""
-            );
+        Objective dockerObjective =
+                manager.addObjective(
+                        "Curso Docker",
+                        ""
+                );
 
-    manager.discardObjective(
-            dockerObjective.getId()
-    );
+        manager.discardObjective(
+                dockerObjective.getId()
+        );
 
-    assertSame(
-            javaObjective,
-            manager.getSelectedObjective()
-                    .orElseThrow()
-    );
+        assertSame(
+                javaObjective,
+                manager.getSelectedObjective()
+                        .orElseThrow()
+        );
 
-    assertEquals(
-            ObjectiveStatus.DISCARDED,
-            dockerObjective.getStatus()
-    );
-}
+        assertEquals(
+                ObjectiveStatus.DISCARDED,
+                dockerObjective.getStatus()
+        );
+    }
 
-@Test
-void shouldClearSelectionWhenLastActiveObjectiveIsClosed() {
+    @Test
+    void shouldClearSelectionWhenLastActiveObjectiveIsClosed() {
 
-    ObjectiveManager manager =
-            new ObjectiveManager();
+        ObjectiveManager manager =
+                new ObjectiveManager();
 
-    Objective objective =
-            manager.addObjective(
-                    "Curso Java",
-                    ""
-            );
+        Objective objective =
+                manager.addObjective(
+                        "Curso Java",
+                        ""
+                );
 
-    manager.completeObjective(
-            objective.getId()
-    );
+        manager.completeObjective(
+                objective.getId()
+        );
 
-    assertTrue(
-            manager.getSelectedObjective()
-                    .isEmpty()
-    );
-}
-@Test
-void shouldRestoreManagerWithActiveAndClosedObjectives() {
+        assertTrue(
+                manager.getSelectedObjective()
+                        .isEmpty()
+        );
+    }
 
-    Objective activeObjective =
-            new Objective(
-                    "Curso Java",
-                    ""
-            );
+    @Test
+    void shouldRestoreManagerWithActiveAndClosedObjectives() {
 
-    Objective completedObjective =
-            new Objective(
-                    "Leitura Clean Code",
-                    ""
-            );
+        Objective activeObjective =
+                new Objective(
+                        "Curso Java",
+                        ""
+                );
 
-    completedObjective.complete();
+        Objective completedObjective =
+                new Objective(
+                        "Leitura Clean Code",
+                        ""
+                );
 
-    ObjectiveManager manager =
-            ObjectiveManager.restore(
-                    java.util.List.of(
-                            completedObjective,
-                            activeObjective
-                    )
-            );
+        completedObjective.complete();
 
-    assertEquals(
-            2,
-            manager.getAllObjectives()
-                    .size()
-    );
+        ObjectiveManager manager =
+                ObjectiveManager.restore(
+                        List.of(
+                                completedObjective,
+                                activeObjective
+                        )
+                );
 
-    assertEquals(
-            1,
-            manager.getActiveObjectiveCount()
-    );
+        assertEquals(
+                2,
+                manager.getAllObjectives()
+                        .size()
+        );
 
-    assertSame(
-            activeObjective,
-            manager.getSelectedObjective()
-                    .orElseThrow()
-    );
-}
+        assertEquals(
+                1,
+                manager.getActiveObjectiveCount()
+        );
+
+        assertSame(
+                activeObjective,
+                manager.getSelectedObjective()
+                        .orElseThrow()
+        );
+    }
+
+    @Test
+    void shouldReturnClosedObjectivesFromMostRecentToOldest() {
+
+        Objective olderCompleted =
+                restoredClosedObjective(
+                        "Curso Java",
+                        ObjectiveStatus.COMPLETED,
+                        Instant.parse(
+                                "2026-10-05T18:00:00Z"
+                        )
+                );
+
+        Objective activeObjective =
+                new Objective(
+                        "Docker",
+                        ""
+                );
+
+        Objective newestNotFinished =
+                restoredClosedObjective(
+                        "Kubernetes",
+                        ObjectiveStatus.NOT_FINISHED,
+                        Instant.parse(
+                                "2026-10-06T18:00:00Z"
+                        )
+                );
+
+        Objective discardedBetweenThem =
+                restoredClosedObjective(
+                        "Curso antigo",
+                        ObjectiveStatus.DISCARDED,
+                        Instant.parse(
+                                "2026-10-06T12:00:00Z"
+                        )
+                );
+
+        ObjectiveManager manager =
+                ObjectiveManager.restore(
+                        List.of(
+                                olderCompleted,
+                                activeObjective,
+                                newestNotFinished,
+                                discardedBetweenThem
+                        )
+                );
+
+        List<Objective> history =
+                manager.getClosedObjectives();
+
+        assertEquals(
+                3,
+                history.size()
+        );
+
+        assertSame(
+                newestNotFinished,
+                history.get(0)
+        );
+
+        assertSame(
+                discardedBetweenThem,
+                history.get(1)
+        );
+
+        assertSame(
+                olderCompleted,
+                history.get(2)
+        );
+
+        assertFalse(
+                history.contains(
+                        activeObjective
+                )
+        );
+    }
+
+    private static Objective restoredClosedObjective(
+            String name,
+            ObjectiveStatus status,
+            Instant closedAt
+    ) {
+
+        return Objective.restore(
+                UUID.randomUUID(),
+                name,
+                "",
+                status,
+                Instant.parse(
+                        "2026-10-01T12:00:00Z"
+                ),
+                closedAt,
+                new PomodoroTimer(
+                        new PomodoroSession()
+                )
+        );
+    }
 }

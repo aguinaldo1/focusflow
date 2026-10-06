@@ -797,3 +797,38 @@ Também foram validados manualmente:
 ## Resultado
 
 O FocusFlow agora diferencia claramente objetivos concluídos, não finalizados e descartados, preparando a base para a visualização de histórico.
+
+---
+
+# BLOCO 19J — Histórico de objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi criada uma consulta específica para objetivos encerrados e uma janela de histórico separada da interface principal.
+
+O histórico:
+
+- exclui objetivos `ACTIVE`;
+- inclui `COMPLETED`, `NOT_FINISHED` e `DISCARDED`;
+- ordena os registros do mais recente para o mais antigo;
+- mostra nome, status, ciclos realizados/planejados, progresso e data de encerramento;
+- permanece somente para consulta.
+
+## Validação
+
+Foram executados **78 testes automatizados**, sem falhas.
+
+Também foi validado manualmente:
+
+- botão `Histórico`;
+- abertura da janela;
+- exibição dos objetivos encerrados;
+- separação entre ativos e histórico;
+- ordenação por data de encerramento;
+- informações de progresso e status.
+
+## Resultado
+
+O FocusFlow agora mantém os objetivos ativos na interface principal e disponibiliza os objetivos encerrados em um histórico independente.

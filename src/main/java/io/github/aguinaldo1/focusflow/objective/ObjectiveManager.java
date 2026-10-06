@@ -3,11 +3,12 @@ package io.github.aguinaldo1.focusflow.objective;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public final class ObjectiveManager {
 
@@ -18,78 +19,81 @@ public final class ObjectiveManager {
 
     private Objective selectedObjective;
 
-	public synchronized Objective addObjective(
-        String name,
-        String description
-) {
-
-    return addObjective(
-            name,
-            description,
-            ObjectiveComplexity.MEDIUM
-    );
-}
-
-public synchronized Objective addObjective(
-        String name,
-        String description,
-        ObjectiveComplexity complexity
-) {
-
-    if (
-            getActiveObjectiveCount()
-                    >= MAX_ACTIVE_OBJECTIVES
+    public synchronized Objective addObjective(
+            String name,
+            String description
     ) {
 
-        throw new IllegalStateException(
-                "Maximum number of active objectives reached."
+        return addObjective(
+                name,
+                description,
+                ObjectiveComplexity.MEDIUM
         );
     }
 
-    Objective objective =
-            new Objective(
-                    name,
-                    description,
-                    complexity
-            );
-
-    objectives.add(
-            objective
-    );
-
-    if (
-            selectedObjective == null
-                    || !selectedObjective.isActive()
+    public synchronized Objective addObjective(
+            String name,
+            String description,
+            ObjectiveComplexity complexity
     ) {
 
-        selectedObjective =
-                objective;
-    }
+        if (
+                getActiveObjectiveCount()
+                        >= MAX_ACTIVE_OBJECTIVES
+        ) {
 
-    return objective;
-}
+            throw new IllegalStateException(
+                    "Maximum number of active objectives reached."
+            );
+        }
 
-        public static ObjectiveManager restore(
-        List<Objective> restoredObjectives
-) {
+        Objective objective =
+                new Objective(
+                        name,
+                        description,
+                        complexity
+                );
 
-    Objects.requireNonNull(
-            restoredObjectives,
-            "restoredObjectives"
-    );
-
-    ObjectiveManager manager =
-            new ObjectiveManager();
-
-    for (Objective objective : restoredObjectives) {
-
-        manager.addRestoredObjective(
+        objectives.add(
                 objective
         );
+
+        if (
+                selectedObjective == null
+                        || !selectedObjective.isActive()
+        ) {
+
+            selectedObjective =
+                    objective;
+        }
+
+        return objective;
     }
 
-    return manager;
-}
+    public static ObjectiveManager restore(
+            List<Objective> restoredObjectives
+    ) {
+
+        Objects.requireNonNull(
+                restoredObjectives,
+                "restoredObjectives"
+        );
+
+        ObjectiveManager manager =
+                new ObjectiveManager();
+
+        for (
+                Objective objective
+                        : restoredObjectives
+        ) {
+
+            manager.addRestoredObjective(
+                    objective
+            );
+        }
+
+        return manager;
+    }
 
     public synchronized void selectObjective(
             UUID objectiveId
@@ -124,36 +128,35 @@ public synchronized Objective addObjective(
                 target;
     }
 
+    public synchronized void completeObjective(
+            UUID objectiveId
+    ) {
 
-	public synchronized void completeObjective(
-        UUID objectiveId
-) {
+        closeObjective(
+                objectiveId,
+                Objective::complete
+        );
+    }
 
-    closeObjective(
-            objectiveId,
-            Objective::complete
-    );
-}
+    public synchronized void markObjectiveNotFinished(
+            UUID objectiveId
+    ) {
 
-public synchronized void markObjectiveNotFinished(
-        UUID objectiveId
-) {
+        closeObjective(
+                objectiveId,
+                Objective::markNotFinished
+        );
+    }
 
-    closeObjective(
-            objectiveId,
-            Objective::markNotFinished
-    );
-}
+    public synchronized void discardObjective(
+            UUID objectiveId
+    ) {
 
-public synchronized void discardObjective(
-        UUID objectiveId
-) {
-
-    closeObjective(
-            objectiveId,
-            Objective::discard
-    );
-}
+        closeObjective(
+                objectiveId,
+                Objective::discard
+        );
+    }
 
     public synchronized Optional<Objective>
     getSelectedObjective() {
@@ -169,6 +172,23 @@ public synchronized void discardObjective(
         return objectives.stream()
                 .filter(
                         Objective::isActive
+                )
+                .toList();
+    }
+
+    public synchronized List<Objective>
+    getClosedObjectives() {
+
+        return objectives.stream()
+                .filter(
+                        objective ->
+                                !objective.isActive()
+                )
+                .sorted(
+                        Comparator.comparing(
+                                        Objective::getClosedAt
+                                )
+                                .reversed()
                 )
                 .toList();
     }
@@ -190,97 +210,98 @@ public synchronized void discardObjective(
                 .count();
     }
 
-	private void closeObjective(
-        UUID objectiveId,
-        Consumer<Objective> closeAction
-) {
-
-    Objects.requireNonNull(
-            objectiveId,
-            "objectiveId"
-    );
-
-    Objects.requireNonNull(
-            closeAction,
-            "closeAction"
-    );
-
-    Objective objective =
-            findObjective(
-                    objectiveId
-            );
-
-    closeAction.accept(
-            objective
-    );
-
-    if (objective == selectedObjective) {
-        selectNextActiveObjective();
-    }
-}
-
-private void selectNextActiveObjective() {
-
-    selectedObjective =
-            objectives.stream()
-                    .filter(
-                            Objective::isActive
-                    )
-                    .findFirst()
-                    .orElse(null);
-}
-
-	private void addRestoredObjective(
-        Objective objective
-) {
-
-    Objects.requireNonNull(
-            objective,
-            "objective"
-    );
-
-    boolean duplicated =
-            objectives.stream()
-                    .anyMatch(
-                            existing ->
-                                    existing
-                                            .getId()
-                                            .equals(
-                                                    objective.getId()
-                                            )
-                    );
-
-    if (duplicated) {
-
-        throw new IllegalArgumentException(
-                "Duplicated objective id."
-        );
-    }
-
-    if (
-            objective.isActive()
-                    && getActiveObjectiveCount()
-                    >= MAX_ACTIVE_OBJECTIVES
+    private void closeObjective(
+            UUID objectiveId,
+            Consumer<Objective> closeAction
     ) {
 
-        throw new IllegalStateException(
-                "Maximum number of active objectives reached."
+        Objects.requireNonNull(
+                objectiveId,
+                "objectiveId"
         );
+
+        Objects.requireNonNull(
+                closeAction,
+                "closeAction"
+        );
+
+        Objective objective =
+                findObjective(
+                        objectiveId
+                );
+
+        closeAction.accept(
+                objective
+        );
+
+        if (objective == selectedObjective) {
+
+            selectNextActiveObjective();
+        }
     }
 
-    objectives.add(
-            objective
-    );
-
-    if (
-            selectedObjective == null
-                    && objective.isActive()
-    ) {
+    private void selectNextActiveObjective() {
 
         selectedObjective =
-                objective;
+                objectives.stream()
+                        .filter(
+                                Objective::isActive
+                        )
+                        .findFirst()
+                        .orElse(null);
     }
-}
+
+    private void addRestoredObjective(
+            Objective objective
+    ) {
+
+        Objects.requireNonNull(
+                objective,
+                "objective"
+        );
+
+        boolean duplicated =
+                objectives.stream()
+                        .anyMatch(
+                                existing ->
+                                        existing
+                                                .getId()
+                                                .equals(
+                                                        objective.getId()
+                                                )
+                        );
+
+        if (duplicated) {
+
+            throw new IllegalArgumentException(
+                    "Duplicated objective id."
+            );
+        }
+
+        if (
+                objective.isActive()
+                        && getActiveObjectiveCount()
+                        >= MAX_ACTIVE_OBJECTIVES
+        ) {
+
+            throw new IllegalStateException(
+                    "Maximum number of active objectives reached."
+            );
+        }
+
+        objectives.add(
+                objective
+        );
+
+        if (
+                selectedObjective == null
+                        && objective.isActive()
+        ) {
+
+            selectedObjective =
+                    objective;
+        }
+    }
 
     private Objective findObjective(
             UUID objectiveId
@@ -318,8 +339,10 @@ private void selectNextActiveObjective() {
                         .snapshot()
                         .status();
 
-        if (status
-                == PomodoroStatus.RUNNING) {
+        if (
+                status
+                        == PomodoroStatus.RUNNING
+        ) {
 
             objective
                     .getTimer()
