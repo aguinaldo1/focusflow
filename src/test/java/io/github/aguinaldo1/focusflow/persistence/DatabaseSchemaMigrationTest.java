@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class DatabaseSchemaMigrationTest {
 
@@ -49,7 +50,8 @@ class DatabaseSchemaMigrationTest {
                                 SELECT
                                     name,
                                     complexity,
-                                    planned_focus_cycles
+                                    planned_focus_cycles,
+                                    saved_at
                                 FROM objectives
                                 WHERE id = 'legacy-objective'
                                 """
@@ -78,6 +80,16 @@ class DatabaseSchemaMigrationTest {
                             "planned_focus_cycles"
                     )
             );
+
+            /*
+             * Dados antigos não possuem um instante
+             * confiável de salvamento.
+             */
+            assertNull(
+                    resultSet.getString(
+                            "saved_at"
+                    )
+            );
         }
     }
 
@@ -88,7 +100,7 @@ class DatabaseSchemaMigrationTest {
         String connectionUrl =
                 "jdbc:sqlite:"
                         + databasePath
-                                .toAbsolutePath();
+                        .toAbsolutePath();
 
         try (
                 Connection connection =

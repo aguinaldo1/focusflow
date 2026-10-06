@@ -47,6 +47,9 @@ public final class SqliteObjectiveRepository {
                         .getTimer()
                         .snapshot();
 
+        Instant savedAt =
+                Instant.now();
+
         String sql =
                 """
                 INSERT INTO objectives (
@@ -61,9 +64,10 @@ public final class SqliteObjectiveRepository {
                     pomodoro_phase,
                     pomodoro_status,
                     completed_focus_cycles,
-                    remaining_seconds
+                    remaining_seconds,
+                    saved_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     name = excluded.name,
                     description = excluded.description,
@@ -77,7 +81,9 @@ public final class SqliteObjectiveRepository {
                     completed_focus_cycles =
                         excluded.completed_focus_cycles,
                     remaining_seconds =
-                        excluded.remaining_seconds
+                        excluded.remaining_seconds,
+                    saved_at =
+                        excluded.saved_at
                 """;
 
         try (
@@ -178,6 +184,11 @@ public final class SqliteObjectiveRepository {
                             .toSeconds()
             );
 
+            statement.setString(
+                    13,
+                    savedAt.toString()
+            );
+
             statement.executeUpdate();
         }
     }
@@ -199,7 +210,8 @@ public final class SqliteObjectiveRepository {
                     pomodoro_phase,
                     pomodoro_status,
                     completed_focus_cycles,
-                    remaining_seconds
+                    remaining_seconds,
+                    saved_at
                 FROM objectives
                 ORDER BY created_at
                 """;
@@ -242,6 +254,11 @@ public final class SqliteObjectiveRepository {
         String closedAt =
                 resultSet.getString(
                         "closed_at"
+                );
+
+        String savedAt =
+                resultSet.getString(
+                        "saved_at"
                 );
 
         return new PersistedObjective(
@@ -294,7 +311,12 @@ public final class SqliteObjectiveRepository {
                 ),
                 resultSet.getLong(
                         "remaining_seconds"
-                )
+                ),
+                savedAt == null
+                        ? null
+                        : Instant.parse(
+                                savedAt
+                        )
         );
     }
 }

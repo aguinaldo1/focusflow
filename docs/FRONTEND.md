@@ -725,3 +725,31 @@ O banco local é criado em:
 
 ```text
 ~/.focusflow/focusflow.db
+
+---
+
+# BLOCO 19H — Ciclo Pomodoro seguro e resiliente
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+O comportamento do Pomodoro foi ajustado para preservar o progresso e tratar corretamente períodos de descanso.
+
+Principais mudanças:
+
+- `Reiniciar` reinicia apenas o intervalo atual, sem apagar ciclos concluídos;
+- pausa curta ou longa inicia automaticamente após o foco;
+- ao terminar a pausa, o próximo foco fica disponível em `IDLE`;
+- pausas continuam considerando o tempo real mesmo com o aplicativo fechado;
+- foco não avança com o aplicativo fechado e retorna como `PAUSED`;
+- alerta sonoro utiliza som nativo do Windows quando disponível;
+- cronômetro de pausa usa destaque teal;
+- indicador de progresso passou a usar geometria circular fixa.
+
+## Persistência
+
+Foi adicionada a coluna:
+
+```text
+saved_at

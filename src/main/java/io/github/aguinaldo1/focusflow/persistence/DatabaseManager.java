@@ -67,6 +67,12 @@ public final class DatabaseManager {
                     "planned_focus_cycles",
                     "INTEGER NOT NULL DEFAULT 4"
             );
+
+            ensureColumn(
+                    connection,
+                    "saved_at",
+                    "TEXT"
+            );
         }
     }
 
@@ -93,7 +99,8 @@ public final class DatabaseManager {
                         pomodoro_phase TEXT NOT NULL,
                         pomodoro_status TEXT NOT NULL,
                         completed_focus_cycles INTEGER NOT NULL,
-                        remaining_seconds INTEGER NOT NULL
+                        remaining_seconds INTEGER NOT NULL,
+                        saved_at TEXT
                     )
                     """
             );
@@ -112,6 +119,7 @@ public final class DatabaseManager {
                         columnName
                 )
         ) {
+
             return;
         }
 

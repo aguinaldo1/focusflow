@@ -20,9 +20,50 @@ public record PersistedObjective(
         PomodoroPhase pomodoroPhase,
         PomodoroStatus pomodoroStatus,
         int completedFocusCycles,
-        long remainingSeconds
+        long remainingSeconds,
+        Instant savedAt
 ) {
 
+    /*
+     * Compatibilidade com chamadas criadas antes
+     * da introdução de savedAt.
+     */
+    public PersistedObjective(
+            UUID id,
+            String name,
+            String description,
+            ObjectiveStatus status,
+            Instant createdAt,
+            Instant closedAt,
+            ObjectiveComplexity complexity,
+            int plannedFocusCycles,
+            PomodoroPhase pomodoroPhase,
+            PomodoroStatus pomodoroStatus,
+            int completedFocusCycles,
+            long remainingSeconds
+    ) {
+
+        this(
+                id,
+                name,
+                description,
+                status,
+                createdAt,
+                closedAt,
+                complexity,
+                plannedFocusCycles,
+                pomodoroPhase,
+                pomodoroStatus,
+                completedFocusCycles,
+                remainingSeconds,
+                null
+        );
+    }
+
+    /*
+     * Compatibilidade com registros anteriores
+     * à complexidade e ao planejamento.
+     */
     public PersistedObjective(
             UUID id,
             String name,
@@ -49,7 +90,8 @@ public record PersistedObjective(
                 pomodoroPhase,
                 pomodoroStatus,
                 completedFocusCycles,
-                remainingSeconds
+                remainingSeconds,
+                null
         );
     }
 }

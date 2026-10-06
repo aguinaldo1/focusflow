@@ -158,6 +158,12 @@ public final class PomodoroSession {
                 PomodoroStatus.IDLE;
     }
 
+    public void restartCurrentInterval() {
+
+        status =
+                PomodoroStatus.IDLE;
+    }
+
     public void reset() {
 
         phase =

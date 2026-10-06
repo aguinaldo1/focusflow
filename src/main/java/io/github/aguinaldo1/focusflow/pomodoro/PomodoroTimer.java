@@ -105,6 +105,39 @@ public final class PomodoroTimer {
         return false;
     }
 
+    public synchronized boolean startBreakIfReady() {
+
+        if (
+                session.getStatus()
+                        != PomodoroStatus.IDLE
+        ) {
+
+            return false;
+        }
+
+        if (
+                session.getPhase()
+                        != PomodoroPhase.SHORT_BREAK
+                        && session.getPhase()
+                        != PomodoroPhase.LONG_BREAK
+        ) {
+
+            return false;
+        }
+
+        session.start();
+
+        return true;
+    }
+
+    public synchronized void restartCurrentInterval() {
+
+        session.restartCurrentInterval();
+
+        remainingTime =
+                session.getCurrentDuration();
+    }
+
     public synchronized void reset() {
 
         session.reset();

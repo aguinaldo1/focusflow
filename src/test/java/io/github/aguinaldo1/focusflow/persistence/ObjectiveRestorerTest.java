@@ -1,12 +1,15 @@
 package io.github.aguinaldo1.focusflow.persistence;
 
 import io.github.aguinaldo1.focusflow.objective.Objective;
+import io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity;
 import io.github.aguinaldo1.focusflow.objective.ObjectiveStatus;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroPhase;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -73,28 +76,32 @@ class ObjectiveRestorerTest {
 
         assertEquals(
                 PomodoroPhase.FOCUS,
-                restored.getTimer()
+                restored
+                        .getTimer()
                         .snapshot()
                         .phase()
         );
 
         assertEquals(
                 PomodoroStatus.PAUSED,
-                restored.getTimer()
+                restored
+                        .getTimer()
                         .snapshot()
                         .status()
         );
 
         assertEquals(
                 2,
-                restored.getTimer()
+                restored
+                        .getTimer()
                         .snapshot()
                         .completedFocusCycles()
         );
 
         assertEquals(
                 1122,
-                restored.getTimer()
+                restored
+                        .getTimer()
                         .snapshot()
                         .remainingTime()
                         .toSeconds()
@@ -146,104 +153,338 @@ class ObjectiveRestorerTest {
 
         assertEquals(
                 4,
-                restored.getTimer()
+                restored
+                        .getTimer()
                         .snapshot()
                         .completedFocusCycles()
         );
     }
-@Test
-void shouldRestoreRunningActiveObjectiveAsPaused() {
 
-    PersistedObjective persisted =
-            new PersistedObjective(
-                    UUID.randomUUID(),
-                    "Curso Java Guanabara",
-                    "Continuar estudos de Java.",
-                    ObjectiveStatus.ACTIVE,
-                    Instant.parse(
-                            "2026-10-05T20:00:00Z"
-                    ),
-                    null,
-                    PomodoroPhase.FOCUS,
-                    PomodoroStatus.RUNNING,
-                    3,
-                    1122
-            );
+    @Test
+    void shouldRestoreLegacyRunningActiveObjectiveAsPaused() {
 
-    Objective restored =
-            new ObjectiveRestorer()
-                    .restore(
-                            persisted
-                    );
+        PersistedObjective persisted =
+                new PersistedObjective(
+                        UUID.randomUUID(),
+                        "Curso Java Guanabara",
+                        "Continuar estudos de Java.",
+                        ObjectiveStatus.ACTIVE,
+                        Instant.parse(
+                                "2026-10-05T20:00:00Z"
+                        ),
+                        null,
+                        PomodoroPhase.FOCUS,
+                        PomodoroStatus.RUNNING,
+                        3,
+                        1122
+                );
 
-    assertEquals(
-            PomodoroStatus.PAUSED,
-            restored
-                    .getTimer()
-                    .snapshot()
-                    .status()
-    );
+        Objective restored =
+                new ObjectiveRestorer()
+                        .restore(
+                                persisted
+                        );
 
-    assertEquals(
-            1122,
-            restored
-                    .getTimer()
-                    .snapshot()
-                    .remainingTime()
-                    .toSeconds()
-    );
+        assertEquals(
+                PomodoroStatus.PAUSED,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .status()
+        );
 
-    assertEquals(
-            3,
-            restored
-                    .getTimer()
-                    .snapshot()
-                    .completedFocusCycles()
-    );
-}
-@Test
-void shouldRestoreComplexityAndAdjustedPlannedCycles() {
+        assertEquals(
+                1122,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .remainingTime()
+                        .toSeconds()
+        );
 
-    PersistedObjective persisted =
-            new PersistedObjective(
-                    UUID.randomUUID(),
-                    "Kubernetes avançado",
-                    "",
-                    ObjectiveStatus.ACTIVE,
-                    Instant.parse(
-                            "2026-10-06T10:00:00Z"
-                    ),
-                    null,
-                    io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity.HARD,
-                    7,
-                    PomodoroPhase.FOCUS,
-                    PomodoroStatus.PAUSED,
-                    2,
-                    900
-            );
+        assertEquals(
+                3,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .completedFocusCycles()
+        );
+    }
 
-    Objective restored =
-            new ObjectiveRestorer()
-                    .restore(
-                            persisted
-                    );
+    @Test
+    void shouldRestoreComplexityAndAdjustedPlannedCycles() {
 
-    assertEquals(
-            io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity.HARD,
-            restored.getComplexity()
-    );
+        PersistedObjective persisted =
+                new PersistedObjective(
+                        UUID.randomUUID(),
+                        "Kubernetes avançado",
+                        "",
+                        ObjectiveStatus.ACTIVE,
+                        Instant.parse(
+                                "2026-10-06T10:00:00Z"
+                        ),
+                        null,
+                        ObjectiveComplexity.HARD,
+                        7,
+                        PomodoroPhase.FOCUS,
+                        PomodoroStatus.PAUSED,
+                        2,
+                        900
+                );
 
-    assertEquals(
-            7,
-            restored.getPlannedFocusCycles()
-    );
+        Objective restored =
+                new ObjectiveRestorer()
+                        .restore(
+                                persisted
+                        );
 
-    assertEquals(
-            2,
-            restored
-                    .getTimer()
-                    .snapshot()
-                    .completedFocusCycles()
-    );
-}
+        assertEquals(
+                ObjectiveComplexity.HARD,
+                restored.getComplexity()
+        );
+
+        assertEquals(
+                7,
+                restored.getPlannedFocusCycles()
+        );
+
+        assertEquals(
+                2,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .completedFocusCycles()
+        );
+    }
+
+    @Test
+    void shouldContinueRunningBreakAfterOfflineTime() {
+
+        Instant savedAt =
+                Instant.parse(
+                        "2026-10-06T18:00:00Z"
+                );
+
+        Clock clock =
+                Clock.fixed(
+                        Instant.parse(
+                                "2026-10-06T18:01:00Z"
+                        ),
+                        ZoneOffset.UTC
+                );
+
+        PersistedObjective persisted =
+                new PersistedObjective(
+                        UUID.randomUUID(),
+                        "Curso Java",
+                        "",
+                        ObjectiveStatus.ACTIVE,
+                        Instant.parse(
+                                "2026-10-06T17:00:00Z"
+                        ),
+                        null,
+                        ObjectiveComplexity.MEDIUM,
+                        4,
+                        PomodoroPhase.SHORT_BREAK,
+                        PomodoroStatus.RUNNING,
+                        1,
+                        240,
+                        savedAt
+                );
+
+        Objective restored =
+                new ObjectiveRestorer(
+                        clock
+                )
+                        .restore(
+                                persisted
+                        );
+
+        assertEquals(
+                PomodoroPhase.SHORT_BREAK,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .phase()
+        );
+
+        assertEquals(
+                PomodoroStatus.RUNNING,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .status()
+        );
+
+        assertEquals(
+                180,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .remainingTime()
+                        .toSeconds()
+        );
+
+        assertEquals(
+                1,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .completedFocusCycles()
+        );
+    }
+
+    @Test
+    void shouldReleaseNextFocusWhenBreakFinishedWhileAppWasClosed() {
+
+        Instant savedAt =
+                Instant.parse(
+                        "2026-10-06T18:00:00Z"
+                );
+
+        Clock clock =
+                Clock.fixed(
+                        Instant.parse(
+                                "2026-10-06T18:05:00Z"
+                        ),
+                        ZoneOffset.UTC
+                );
+
+        PersistedObjective persisted =
+                new PersistedObjective(
+                        UUID.randomUUID(),
+                        "Curso Java",
+                        "",
+                        ObjectiveStatus.ACTIVE,
+                        Instant.parse(
+                                "2026-10-06T17:00:00Z"
+                        ),
+                        null,
+                        ObjectiveComplexity.MEDIUM,
+                        4,
+                        PomodoroPhase.SHORT_BREAK,
+                        PomodoroStatus.RUNNING,
+                        1,
+                        240,
+                        savedAt
+                );
+
+        Objective restored =
+                new ObjectiveRestorer(
+                        clock
+                )
+                        .restore(
+                                persisted
+                        );
+
+        assertEquals(
+                PomodoroPhase.FOCUS,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .phase()
+        );
+
+        assertEquals(
+                PomodoroStatus.IDLE,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .status()
+        );
+
+        assertEquals(
+                1500,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .remainingTime()
+                        .toSeconds()
+        );
+
+        assertEquals(
+                1,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .completedFocusCycles()
+        );
+    }
+
+    @Test
+    void shouldPauseRunningFocusWithoutConsumingOfflineTime() {
+
+        Instant savedAt =
+                Instant.parse(
+                        "2026-10-06T18:00:00Z"
+                );
+
+        Clock clock =
+                Clock.fixed(
+                        Instant.parse(
+                                "2026-10-06T18:30:00Z"
+                        ),
+                        ZoneOffset.UTC
+                );
+
+        PersistedObjective persisted =
+                new PersistedObjective(
+                        UUID.randomUUID(),
+                        "Curso Java",
+                        "",
+                        ObjectiveStatus.ACTIVE,
+                        Instant.parse(
+                                "2026-10-06T17:00:00Z"
+                        ),
+                        null,
+                        ObjectiveComplexity.MEDIUM,
+                        4,
+                        PomodoroPhase.FOCUS,
+                        PomodoroStatus.RUNNING,
+                        2,
+                        1122,
+                        savedAt
+                );
+
+        Objective restored =
+                new ObjectiveRestorer(
+                        clock
+                )
+                        .restore(
+                                persisted
+                        );
+
+        assertEquals(
+                PomodoroPhase.FOCUS,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .phase()
+        );
+
+        assertEquals(
+                PomodoroStatus.PAUSED,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .status()
+        );
+
+        assertEquals(
+                1122,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .remainingTime()
+                        .toSeconds()
+        );
+
+        assertEquals(
+                2,
+                restored
+                        .getTimer()
+                        .snapshot()
+                        .completedFocusCycles()
+        );
+    }
 }

@@ -7,6 +7,7 @@ import io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity;
 import io.github.aguinaldo1.focusflow.objective.ObjectiveManager;
 import io.github.aguinaldo1.focusflow.persistence.FocusFlowStorage;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroClock;
+import io.github.aguinaldo1.focusflow.pomodoro.PomodoroPhase;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroTimer;
@@ -33,8 +34,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.Stage;
@@ -48,6 +47,14 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public final class FocusFlowApp extends Application {
+
+    private static final double PROGRESS_RADIUS =
+            27.0;
+
+    private static final double PROGRESS_CIRCUMFERENCE =
+            2.0
+                    * Math.PI
+                    * PROGRESS_RADIUS;
 
     private ObjectiveManager objectiveManager;
 
@@ -74,7 +81,7 @@ public final class FocusFlowApp extends Application {
     private Label feedbackLabel;
 
     private Label progressPercentageLabel;
-    private Arc progressArc;
+    private Circle progressRing;
     private StackPane progressDonut;
 
     private Button addObjectiveButton;
@@ -86,7 +93,7 @@ public final class FocusFlowApp extends Application {
     private Button startButton;
     private Button pauseButton;
     private Button resumeButton;
-    private Button resetButton;
+    private Button restartButton;
 
     @Override
     public void start(
@@ -198,7 +205,7 @@ public final class FocusFlowApp extends Application {
                         startButton,
                         pauseButton,
                         resumeButton,
-                        resetButton
+                        restartButton
                 );
 
         pomodoroControls.setAlignment(
@@ -208,7 +215,7 @@ public final class FocusFlowApp extends Application {
         Label shortcutsLabel =
                 new Label(
                         "Ctrl+I iniciar  •  Ctrl+P pausar  •  "
-                                + "Ctrl+C continuar  •  Ctrl+R resetar"
+                                + "Ctrl+C continuar  •  Ctrl+R reiniciar"
                 );
 
         shortcutsLabel.setStyle(
@@ -482,11 +489,6 @@ public final class FocusFlowApp extends Application {
         timeLabel =
                 new Label("--:--");
 
-        timeLabel.setStyle(
-                "-fx-font-size: 50px;"
-                        + "-fx-font-weight: bold;"
-        );
-
         statusLabel =
                 new Label(
                         "SEM OBJETIVO"
@@ -529,9 +531,9 @@ public final class FocusFlowApp extends Application {
                         "Continuar"
                 );
 
-        resetButton =
+        restartButton =
                 new Button(
-                        "Resetar"
+                        "Reiniciar"
                 );
 
         startButton.setOnAction(
@@ -558,12 +560,16 @@ public final class FocusFlowApp extends Application {
                         )
         );
 
-        resetButton.setOnAction(
+        restartButton.setOnAction(
                 event ->
                         executeTimerAction(
-                                PomodoroTimer::reset,
-                                "Pomodoro reiniciado."
+                                PomodoroTimer::restartCurrentInterval,
+                                "Intervalo reiniciado."
                         )
+        );
+
+        updateTimerAppearance(
+                null
         );
     }
 
@@ -571,7 +577,7 @@ public final class FocusFlowApp extends Application {
 
         Circle backgroundRing =
                 new Circle(
-                        27
+                        PROGRESS_RADIUS
                 );
 
         backgroundRing.setFill(
@@ -588,36 +594,45 @@ public final class FocusFlowApp extends Application {
                 5
         );
 
-        progressArc =
-                new Arc(
-                        0,
-                        0,
-                        27,
-                        27,
-                        90,
-                        0
+        progressRing =
+                new Circle(
+                        PROGRESS_RADIUS
                 );
 
-        progressArc.setType(
-                ArcType.OPEN
-        );
-
-        progressArc.setFill(
+        progressRing.setFill(
                 Color.TRANSPARENT
         );
 
-        progressArc.setStroke(
+        progressRing.setStroke(
                 Color.web(
                         "#4F46E5"
                 )
         );
 
-        progressArc.setStrokeWidth(
+        progressRing.setStrokeWidth(
                 5
         );
 
-        progressArc.setStrokeLineCap(
+        progressRing.setStrokeLineCap(
                 StrokeLineCap.ROUND
+        );
+
+        progressRing
+                .getStrokeDashArray()
+                .setAll(
+                        PROGRESS_CIRCUMFERENCE,
+                        PROGRESS_CIRCUMFERENCE
+                );
+
+        progressRing.setStrokeDashOffset(
+                PROGRESS_CIRCUMFERENCE
+        );
+
+        /*
+         * O início do progresso fica no topo da rosca.
+         */
+        progressRing.setRotate(
+                -90
         );
 
         progressPercentageLabel =
@@ -634,7 +649,7 @@ public final class FocusFlowApp extends Application {
         progressDonut =
                 new StackPane(
                         backgroundRing,
-                        progressArc,
+                        progressRing,
                         progressPercentageLabel
                 );
 
@@ -953,29 +968,86 @@ public final class FocusFlowApp extends Application {
             return;
         }
 
+        Objective clockObjective =
+                selected.orElseThrow();
+
         PomodoroTimer selectedTimer =
-                selected
-                        .orElseThrow()
-                        .getTimer();
+                clockObjective.getTimer();
 
         clock =
                 new PomodoroClock(
                         selectedTimer,
                         () ->
                                 Platform.runLater(
-                                        () -> {
-
-                                            systemAlert
-                                                    .playTimerFinished();
-
-                                            persistState();
-
-                                            refreshView();
-                                        }
+                                        () ->
+                                                handleIntervalCompleted(
+                                                        clockObjective,
+                                                        selectedTimer
+                                                )
                                 )
                 );
 
         clock.start();
+    }
+
+    private void handleIntervalCompleted(
+            Objective completedObjective,
+            PomodoroTimer completedTimer
+    ) {
+
+        systemAlert
+                .playTimerFinished();
+
+        boolean stillSelected =
+                objectiveManager
+                        .getSelectedObjective()
+                        .map(
+                                objective ->
+                                        objective
+                                                .getId()
+                                                .equals(
+                                                        completedObjective
+                                                                .getId()
+                                                )
+                        )
+                        .orElse(
+                                false
+                        );
+
+        if (stillSelected) {
+
+            PomodoroSnapshot snapshot =
+                    completedTimer.snapshot();
+
+            boolean breakStarted =
+                    completedTimer
+                            .startBreakIfReady();
+
+            if (breakStarted) {
+
+                feedbackLabel.setText(
+                        "Foco concluído. Pausa iniciada automaticamente."
+                );
+
+            } else if (
+                    snapshot.phase()
+                            == PomodoroPhase.FOCUS
+            ) {
+
+                feedbackLabel.setText(
+                        "Pausa concluída. Inicie o próximo ciclo quando estiver pronto."
+                );
+
+            } else {
+
+                feedbackLabel.setText(
+                        "Intervalo concluído."
+                );
+            }
+        }
+
+        persistState();
+        refreshView();
     }
 
     private void executeTimerAction(
@@ -1104,6 +1176,10 @@ public final class FocusFlowApp extends Application {
                     0
             );
 
+            updateTimerAppearance(
+                    null
+            );
+
             updateButtonsWithoutObjective();
             updateAddObjectiveControls();
 
@@ -1152,9 +1228,9 @@ public final class FocusFlowApp extends Application {
         );
 
         phaseLabel.setText(
-                snapshot
-                        .phase()
-                        .name()
+                phaseDisplayName(
+                        snapshot.phase()
+                )
         );
 
         timeLabel.setText(
@@ -1176,6 +1252,10 @@ public final class FocusFlowApp extends Application {
 
         updateProgressDonut(
                 objective.getProgressPercentage()
+        );
+
+        updateTimerAppearance(
+                snapshot.phase()
         );
 
         updateButtons(
@@ -1203,10 +1283,74 @@ public final class FocusFlowApp extends Application {
                         + "%"
         );
 
-        progressArc.setLength(
-                -360.0
-                        * normalizedPercentage
-                        / 100.0
+        double offset =
+                PROGRESS_CIRCUMFERENCE
+                        * (
+                        1.0
+                                - normalizedPercentage
+                                / 100.0
+                );
+
+        progressRing.setStrokeDashOffset(
+                offset
+        );
+    }
+
+    private void updateTimerAppearance(
+            PomodoroPhase phase
+    ) {
+
+        String timerColor;
+        String phaseColor;
+
+        if (
+                phase == PomodoroPhase.SHORT_BREAK
+                        || phase == PomodoroPhase.LONG_BREAK
+        ) {
+
+            /*
+             * Teal para representar descanso,
+             * sem transmitir alerta ou erro.
+             */
+            timerColor =
+                    "#0F766E";
+
+            phaseColor =
+                    "#0F766E";
+
+        } else if (
+                phase == PomodoroPhase.FOCUS
+        ) {
+
+            timerColor =
+                    "#0F172A";
+
+            phaseColor =
+                    "#475569";
+
+        } else {
+
+            timerColor =
+                    "#64748B";
+
+            phaseColor =
+                    "#64748B";
+        }
+
+        timeLabel.setStyle(
+                "-fx-font-size: 50px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: "
+                        + timerColor
+                        + ";"
+        );
+
+        phaseLabel.setStyle(
+                "-fx-font-size: 11px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: "
+                        + phaseColor
+                        + ";"
         );
     }
 
@@ -1245,7 +1389,7 @@ public final class FocusFlowApp extends Application {
                 true
         );
 
-        resetButton.setDisable(
+        restartButton.setDisable(
                 true
         );
     }
@@ -1266,7 +1410,7 @@ public final class FocusFlowApp extends Application {
                 status != PomodoroStatus.PAUSED
         );
 
-        resetButton.setDisable(
+        restartButton.setDisable(
                 false
         );
     }
@@ -1325,8 +1469,8 @@ public final class FocusFlowApp extends Application {
                 ),
                 () ->
                         executeTimerAction(
-                                PomodoroTimer::reset,
-                                "Pomodoro reiniciado."
+                                PomodoroTimer::restartCurrentInterval,
+                                "Intervalo reiniciado."
                         )
         );
 
@@ -1438,6 +1582,23 @@ public final class FocusFlowApp extends Application {
 
             case HARD ->
                     "Difícil";
+        };
+    }
+
+    private static String phaseDisplayName(
+            PomodoroPhase phase
+    ) {
+
+        return switch (phase) {
+
+            case FOCUS ->
+                    "FOCO";
+
+            case SHORT_BREAK ->
+                    "PAUSA CURTA";
+
+            case LONG_BREAK ->
+                    "PAUSA LONGA";
         };
     }
 
