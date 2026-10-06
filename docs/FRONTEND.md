@@ -523,3 +523,26 @@ Regra:
 ACTIVE + RUNNING
         ↓ reabertura
 ACTIVE + PAUSED
+
+---
+
+# BLOCO 18E — Carregamento dos objetivos persistidos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi criado o `ObjectiveLoader`, responsável por coordenar a recuperação dos objetivos persistidos.
+
+Fluxo:
+
+```text
+SQLite
+    ↓
+PersistedObjective
+    ↓
+ObjectiveRestorer
+    ↓
+Objective
+    ↓
+ObjectiveManager

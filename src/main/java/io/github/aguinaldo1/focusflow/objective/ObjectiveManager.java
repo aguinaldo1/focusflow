@@ -51,6 +51,28 @@ public final class ObjectiveManager {
         return objective;
     }
 
+        public static ObjectiveManager restore(
+        List<Objective> restoredObjectives
+) {
+
+    Objects.requireNonNull(
+            restoredObjectives,
+            "restoredObjectives"
+    );
+
+    ObjectiveManager manager =
+            new ObjectiveManager();
+
+    for (Objective objective : restoredObjectives) {
+
+        manager.addRestoredObjective(
+                objective
+        );
+    }
+
+    return manager;
+}
+
     public synchronized void selectObjective(
             UUID objectiveId
     ) {
@@ -188,6 +210,58 @@ private void selectNextActiveObjective() {
                     )
                     .findFirst()
                     .orElse(null);
+}
+
+	private void addRestoredObjective(
+        Objective objective
+) {
+
+    Objects.requireNonNull(
+            objective,
+            "objective"
+    );
+
+    boolean duplicated =
+            objectives.stream()
+                    .anyMatch(
+                            existing ->
+                                    existing
+                                            .getId()
+                                            .equals(
+                                                    objective.getId()
+                                            )
+                    );
+
+    if (duplicated) {
+
+        throw new IllegalArgumentException(
+                "Duplicated objective id."
+        );
+    }
+
+    if (
+            objective.isActive()
+                    && getActiveObjectiveCount()
+                    >= MAX_ACTIVE_OBJECTIVES
+    ) {
+
+        throw new IllegalStateException(
+                "Maximum number of active objectives reached."
+        );
+    }
+
+    objectives.add(
+            objective
+    );
+
+    if (
+            selectedObjective == null
+                    && objective.isActive()
+    ) {
+
+        selectedObjective =
+                objective;
+    }
 }
 
     private Objective findObjective(

@@ -426,4 +426,46 @@ void shouldClearSelectionWhenLastActiveObjectiveIsClosed() {
                     .isEmpty()
     );
 }
+@Test
+void shouldRestoreManagerWithActiveAndClosedObjectives() {
+
+    Objective activeObjective =
+            new Objective(
+                    "Curso Java",
+                    ""
+            );
+
+    Objective completedObjective =
+            new Objective(
+                    "Leitura Clean Code",
+                    ""
+            );
+
+    completedObjective.complete();
+
+    ObjectiveManager manager =
+            ObjectiveManager.restore(
+                    java.util.List.of(
+                            completedObjective,
+                            activeObjective
+                    )
+            );
+
+    assertEquals(
+            2,
+            manager.getAllObjectives()
+                    .size()
+    );
+
+    assertEquals(
+            1,
+            manager.getActiveObjectiveCount()
+    );
+
+    assertSame(
+            activeObjective,
+            manager.getSelectedObjective()
+                    .orElseThrow()
+    );
+}
 }
