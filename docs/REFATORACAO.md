@@ -129,3 +129,45 @@ O `FocusFlowApp` continua coordenando as ações de domínio, persistência e ti
 ## Resultado
 
 A interface de objetivos foi isolada em um componente próprio, reduzindo significativamente as responsabilidades do `FocusFlowApp`.
+
+---
+
+# BLOCO 19K.4 — Extração do PomodoroControls
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Separar da classe principal os controles visuais do Pomodoro.
+
+## Alterações
+
+Foi criado:
+
+`ui/PomodoroControls.java`
+
+O componente passou a ser responsável por:
+
+- botão Iniciar;
+- botão Pausar;
+- botão Continuar;
+- botão Reiniciar;
+- estado habilitado/desabilitado dos controles conforme o status do Pomodoro.
+
+O `FocusFlowApp` continua responsável pelas ações executadas por cada controle.
+
+## Validação
+
+- 78 testes automatizados passando;
+- `PomodoroControls` integrado ao `FocusFlowApp`;
+- Iniciar, Pausar, Continuar e Reiniciar funcionando;
+- estados habilitado/desabilitado preservados;
+- atalhos Ctrl+I, Ctrl+P, Ctrl+C e Ctrl+R funcionando;
+- Ctrl+C continua copiando texto quando o foco está em um campo de entrada;
+- timer e ProgressDonut preservados;
+- Histórico preservado;
+- nenhuma regressão visual identificada.
+
+## Resultado
+
+Os controles do Pomodoro foram isolados em um componente próprio, reduzindo mais uma responsabilidade visual do `FocusFlowApp`.

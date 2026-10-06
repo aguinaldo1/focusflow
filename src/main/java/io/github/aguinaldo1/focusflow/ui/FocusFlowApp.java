@@ -9,7 +9,6 @@ import io.github.aguinaldo1.focusflow.persistence.FocusFlowStorage;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroClock;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroPhase;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
-import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroTimer;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -56,13 +55,9 @@ public final class FocusFlowApp extends Application {
 
     private ObjectivePanel objectivePanel;
     private PomodoroPanel pomodoroPanel;
+    private PomodoroControls pomodoroControls;
 
     private Button historyButton;
-
-    private Button startButton;
-    private Button pauseButton;
-    private Button resumeButton;
-    private Button restartButton;
 
     @Override
     public void start(
@@ -82,19 +77,6 @@ public final class FocusFlowApp extends Application {
         createPomodoroPanel();
         createHistoryControl(
                 stage
-        );
-
-        HBox pomodoroControls =
-                new HBox(
-                        6,
-                        startButton,
-                        pauseButton,
-                        resumeButton,
-                        restartButton
-                );
-
-        pomodoroControls.setAlignment(
-                Pos.CENTER
         );
 
         HBox historyControls =
@@ -241,57 +223,29 @@ public final class FocusFlowApp extends Application {
                 "-fx-font-size: 10px;"
         );
 
-        startButton =
-                new Button(
-                        "Iniciar"
+        pomodoroControls =
+                new PomodoroControls(
+                        () ->
+                                executeTimerAction(
+                                        PomodoroTimer::start,
+                                        "Intervalo iniciado."
+                                ),
+                        () ->
+                                executeTimerAction(
+                                        PomodoroTimer::pause,
+                                        "Intervalo pausado."
+                                ),
+                        () ->
+                                executeTimerAction(
+                                        PomodoroTimer::resume,
+                                        "Intervalo retomado."
+                                ),
+                        () ->
+                                executeTimerAction(
+                                        PomodoroTimer::restartCurrentInterval,
+                                        "Intervalo reiniciado."
+                                )
                 );
-
-        pauseButton =
-                new Button(
-                        "Pausar"
-                );
-
-        resumeButton =
-                new Button(
-                        "Continuar"
-                );
-
-        restartButton =
-                new Button(
-                        "Reiniciar"
-                );
-
-        startButton.setOnAction(
-                event ->
-                        executeTimerAction(
-                                PomodoroTimer::start,
-                                "Intervalo iniciado."
-                        )
-        );
-
-        pauseButton.setOnAction(
-                event ->
-                        executeTimerAction(
-                                PomodoroTimer::pause,
-                                "Intervalo pausado."
-                        )
-        );
-
-        resumeButton.setOnAction(
-                event ->
-                        executeTimerAction(
-                                PomodoroTimer::resume,
-                                "Intervalo retomado."
-                        )
-        );
-
-        restartButton.setOnAction(
-                event ->
-                        executeTimerAction(
-                                PomodoroTimer::restartCurrentInterval,
-                                "Intervalo reiniciado."
-                        )
-        );
     }
 
     private void createHistoryControl(
@@ -897,7 +851,9 @@ public final class FocusFlowApp extends Application {
             pomodoroPanel
                     .showEmptyState();
 
-            updateButtonsWithoutObjective();
+            pomodoroControls
+                    .showWithoutObjective();
+
             updateAddObjectiveControls();
 
             return;
@@ -921,7 +877,7 @@ public final class FocusFlowApp extends Application {
                 objective.getProgressPercentage()
         );
 
-        updateButtons(
+        pomodoroControls.update(
                 snapshot.status()
         );
 
@@ -940,46 +896,6 @@ public final class FocusFlowApp extends Application {
                 .setAddControlsDisabled(
                         limitReached
                 );
-    }
-
-    private void updateButtonsWithoutObjective() {
-
-        startButton.setDisable(
-                true
-        );
-
-        pauseButton.setDisable(
-                true
-        );
-
-        resumeButton.setDisable(
-                true
-        );
-
-        restartButton.setDisable(
-                true
-        );
-    }
-
-    private void updateButtons(
-            PomodoroStatus status
-    ) {
-
-        startButton.setDisable(
-                status != PomodoroStatus.IDLE
-        );
-
-        pauseButton.setDisable(
-                status != PomodoroStatus.RUNNING
-        );
-
-        resumeButton.setDisable(
-                status != PomodoroStatus.PAUSED
-        );
-
-        restartButton.setDisable(
-                false
-        );
     }
 
     private void startUiRefresh() {
