@@ -17,7 +17,9 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -52,6 +54,7 @@ public final class FocusFlowApp extends Application {
     private ComboBox<Objective> objectiveSelector;
 
     private Label planningLabel;
+    private Label plannedCyclesLabel;
     private Label phaseLabel;
     private Label timeLabel;
     private Label statusLabel;
@@ -59,6 +62,11 @@ public final class FocusFlowApp extends Application {
     private Label feedbackLabel;
 
     private Button addObjectiveButton;
+    private Button removeObjectiveButton;
+
+    private Button decreaseCyclesButton;
+    private Button increaseCyclesButton;
+
     private Button startButton;
     private Button pauseButton;
     private Button resumeButton;
@@ -93,6 +101,29 @@ public final class FocusFlowApp extends Application {
                 Pos.CENTER
         );
 
+        HBox objectiveSelection =
+                new HBox(
+                        6,
+                        objectiveSelector,
+                        removeObjectiveButton
+                );
+
+        objectiveSelection.setAlignment(
+                Pos.CENTER
+        );
+
+        HBox cycleAdjustment =
+                new HBox(
+                        8,
+                        decreaseCyclesButton,
+                        plannedCyclesLabel,
+                        increaseCyclesButton
+                );
+
+        cycleAdjustment.setAlignment(
+                Pos.CENTER
+        );
+
         HBox pomodoroControls =
                 new HBox(
                         6,
@@ -121,8 +152,9 @@ public final class FocusFlowApp extends Application {
                 new VBox(
                         7,
                         objectiveInput,
-                        objectiveSelector,
+                        objectiveSelection,
                         planningLabel,
+                        cycleAdjustment,
                         phaseLabel,
                         timeLabel,
                         statusLabel,
@@ -144,7 +176,7 @@ public final class FocusFlowApp extends Application {
                 new Scene(
                         root,
                         430,
-                        300
+                        340
                 );
 
         configureKeyboardShortcuts(
@@ -220,7 +252,7 @@ public final class FocusFlowApp extends Application {
         );
 
         objectiveSelector.setPrefWidth(
-                280
+                250
         );
 
         objectiveSelector.setDisable(
@@ -268,6 +300,19 @@ public final class FocusFlowApp extends Application {
                 }
         );
 
+        removeObjectiveButton =
+                new Button(
+                        "Remover"
+                );
+
+        removeObjectiveButton.setDisable(
+                true
+        );
+
+        removeObjectiveButton.setOnAction(
+                event -> removeSelectedObjective()
+        );
+
         planningLabel =
                 new Label(
                         "Cadastre um objetivo para começar."
@@ -276,6 +321,40 @@ public final class FocusFlowApp extends Application {
         planningLabel.setStyle(
                 "-fx-font-size: 11px;"
                         + "-fx-opacity: 0.75;"
+        );
+
+        decreaseCyclesButton =
+                new Button(
+                        "−"
+                );
+
+        increaseCyclesButton =
+                new Button(
+                        "+"
+                );
+
+        plannedCyclesLabel =
+                new Label(
+                        "0 ciclos"
+                );
+
+        plannedCyclesLabel.setStyle(
+                "-fx-font-size: 12px;"
+                        + "-fx-font-weight: bold;"
+        );
+
+        decreaseCyclesButton.setOnAction(
+                event ->
+                        adjustPlannedCycles(
+                                -1
+                        )
+        );
+
+        increaseCyclesButton.setOnAction(
+                event ->
+                        adjustPlannedCycles(
+                                1
+                        )
         );
     }
 
@@ -426,6 +505,96 @@ public final class FocusFlowApp extends Application {
         }
     }
 
+    private void removeSelectedObjective() {
+
+        Optional<Objective> selected =
+                objectiveManager
+                        .getSelectedObjective();
+
+        if (selected.isEmpty()) {
+
+            feedbackLabel.setText(
+                    "Selecione um objetivo primeiro."
+            );
+
+            return;
+        }
+
+        Objective objective =
+                selected.orElseThrow();
+
+        Alert confirmation =
+                new Alert(
+                        Alert.AlertType.CONFIRMATION
+                );
+
+        confirmation.setTitle(
+                "Remover objetivo"
+        );
+
+        confirmation.setHeaderText(
+                "Remover \""
+                        + objective.getName()
+                        + "\"?"
+        );
+
+        confirmation.setContentText(
+                "O objetivo sairá da lista ativa e ficará "
+                        + "marcado como descartado."
+        );
+
+        ButtonType removeButton =
+                new ButtonType(
+                        "Remover"
+                );
+
+        confirmation
+                .getButtonTypes()
+                .setAll(
+                        removeButton,
+                        ButtonType.CANCEL
+                );
+
+        Optional<ButtonType> result =
+                confirmation.showAndWait();
+
+        if (
+                result.isEmpty()
+                        || result.get()
+                        != removeButton
+        ) {
+
+            return;
+        }
+
+        try {
+
+            objectiveManager.discardObjective(
+                    objective.getId()
+            );
+
+            refreshObjectiveSelector();
+
+            bindClockToSelectedObjective();
+
+            feedbackLabel.setText(
+                    "Objetivo removido: "
+                            + objective.getName()
+            );
+
+            refreshView();
+
+        } catch (
+                IllegalArgumentException
+                        | IllegalStateException exception
+        ) {
+
+            feedbackLabel.setText(
+                    exception.getMessage()
+            );
+        }
+    }
+
     private void selectObjectiveFromInterface(
             Objective objective
     ) {
@@ -466,6 +635,56 @@ public final class FocusFlowApp extends Application {
                 IllegalArgumentException
                         | IllegalStateException exception
         ) {
+
+            feedbackLabel.setText(
+                    exception.getMessage()
+            );
+        }
+    }
+
+    private void adjustPlannedCycles(
+            int adjustment
+    ) {
+
+        Optional<Objective> selected =
+                objectiveManager
+                        .getSelectedObjective();
+
+        if (selected.isEmpty()) {
+
+            feedbackLabel.setText(
+                    "Selecione um objetivo primeiro."
+            );
+
+            return;
+        }
+
+        Objective objective =
+                selected.orElseThrow();
+
+        try {
+
+            if (adjustment > 0) {
+
+                objective
+                        .increasePlannedFocusCycles();
+
+            } else {
+
+                objective
+                        .decreasePlannedFocusCycles();
+            }
+
+            feedbackLabel.setText(
+                    "Planejamento ajustado para "
+                            + objective
+                            .getPlannedFocusCycles()
+                            + " ciclos."
+            );
+
+            refreshView();
+
+        } catch (IllegalStateException exception) {
 
             feedbackLabel.setText(
                     exception.getMessage()
@@ -585,6 +804,22 @@ public final class FocusFlowApp extends Application {
                     "Cadastre um objetivo para começar."
             );
 
+            plannedCyclesLabel.setText(
+                    "0 ciclos"
+            );
+
+            decreaseCyclesButton.setDisable(
+                    true
+            );
+
+            increaseCyclesButton.setDisable(
+                    true
+            );
+
+            removeObjectiveButton.setDisable(
+                    true
+            );
+
             phaseLabel.setText(
                     "-"
             );
@@ -619,9 +854,33 @@ public final class FocusFlowApp extends Application {
                 complexityLabel(
                         objective.getComplexity()
                 )
-                        + " • "
-                        + objective.getPlannedFocusCycles()
-                        + " ciclos planejados"
+                        + " • planejamento"
+        );
+
+        plannedCyclesLabel.setText(
+                objective
+                        .getPlannedFocusCycles()
+                        + " ciclos"
+        );
+
+        int minimumPlannedCycles =
+                Math.max(
+                        1,
+                        snapshot.completedFocusCycles()
+                );
+
+        decreaseCyclesButton.setDisable(
+                objective
+                        .getPlannedFocusCycles()
+                        <= minimumPlannedCycles
+        );
+
+        increaseCyclesButton.setDisable(
+                false
+        );
+
+        removeObjectiveButton.setDisable(
+                false
         );
 
         phaseLabel.setText(
@@ -949,7 +1208,6 @@ public final class FocusFlowApp extends Application {
         );
 
         private final String label;
-
         private final ObjectiveComplexity complexity;
 
         ComplexityOption(

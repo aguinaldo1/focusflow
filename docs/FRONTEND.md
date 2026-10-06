@@ -661,3 +661,37 @@ Curso Java → PAUSED
 
 retorno para Curso Java
 tempo restante preservado
+
+---
+
+# BLOCO 19E — Planejamento e remoção de objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A interface permite ajustar manualmente a quantidade de ciclos planejados com `−` e `+`.
+
+A complexidade original do objetivo é preservada mesmo quando o planejamento é alterado.
+
+Também foi adicionada a opção **Remover**, com confirmação antes da ação.
+
+Remover um objetivo não apaga seu histórico: ele passa para o estado `DISCARDED` e deixa de ocupar uma vaga entre os objetivos ativos.
+
+## Validação
+
+Validado:
+
+- Fácil inicia com 2 ciclos;
+- Médio inicia com 4 ciclos;
+- Difícil inicia com 6 ciclos;
+- cada objetivo mantém seu próprio planejamento;
+- o limite mínimo de ciclos é respeitado;
+- remoção exige confirmação;
+- objetivo removido sai da lista ativa;
+- outro objetivo ativo é selecionado;
+- remover um dos 5 objetivos libera novamente uma vaga para cadastro.
+
+## Próximo passo
+
+**Gráfico de progresso do objetivo em formato de rosca.**
