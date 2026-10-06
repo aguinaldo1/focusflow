@@ -44,6 +44,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public final class FocusFlowApp extends Application {
@@ -85,6 +86,9 @@ public final class FocusFlowApp extends Application {
     private StackPane progressDonut;
 
     private Button addObjectiveButton;
+
+    private Button completeObjectiveButton;
+    private Button notFinishedObjectiveButton;
     private Button removeObjectiveButton;
 
     private Button decreaseCyclesButton;
@@ -127,11 +131,22 @@ public final class FocusFlowApp extends Application {
         HBox objectiveSelection =
                 new HBox(
                         6,
-                        objectiveSelector,
-                        removeObjectiveButton
+                        objectiveSelector
                 );
 
         objectiveSelection.setAlignment(
+                Pos.CENTER
+        );
+
+        HBox objectiveLifecycle =
+                new HBox(
+                        6,
+                        completeObjectiveButton,
+                        notFinishedObjectiveButton,
+                        removeObjectiveButton
+                );
+
+        objectiveLifecycle.setAlignment(
                 Pos.CENTER
         );
 
@@ -228,6 +243,7 @@ public final class FocusFlowApp extends Application {
                         7,
                         objectiveInput,
                         objectiveSelection,
+                        objectiveLifecycle,
                         planningLabel,
                         cycleAdjustment,
                         timerArea,
@@ -248,7 +264,7 @@ public final class FocusFlowApp extends Application {
                 new Scene(
                         root,
                         430,
-                        340
+                        380
                 );
 
         configureKeyboardShortcuts(
@@ -417,6 +433,34 @@ public final class FocusFlowApp extends Application {
                 }
         );
 
+        completeObjectiveButton =
+                new Button(
+                        "Finalizar"
+                );
+
+        completeObjectiveButton.setDisable(
+                true
+        );
+
+        completeObjectiveButton.setOnAction(
+                event ->
+                        completeSelectedObjective()
+        );
+
+        notFinishedObjectiveButton =
+                new Button(
+                        "Não finalizado"
+                );
+
+        notFinishedObjectiveButton.setDisable(
+                true
+        );
+
+        notFinishedObjectiveButton.setOnAction(
+                event ->
+                        markSelectedObjectiveNotFinished()
+        );
+
         removeObjectiveButton =
                 new Button(
                         "Remover"
@@ -427,7 +471,8 @@ public final class FocusFlowApp extends Application {
         );
 
         removeObjectiveButton.setOnAction(
-                event -> removeSelectedObjective()
+                event ->
+                        removeSelectedObjective()
         );
 
         planningLabel =
@@ -628,9 +673,6 @@ public final class FocusFlowApp extends Application {
                 PROGRESS_CIRCUMFERENCE
         );
 
-        /*
-         * O início do progresso fica no topo da rosca.
-         */
         progressRing.setRotate(
                 -90
         );
@@ -707,12 +749,138 @@ public final class FocusFlowApp extends Application {
             bindClockToSelectedObjective();
             refreshView();
 
-            if (
-                    persistState()
-            ) {
+            if (persistState()) {
 
                 feedbackLabel.setText(
                         "Objetivo adicionado: "
+                                + objective.getName()
+                );
+            }
+
+        } catch (
+                IllegalArgumentException
+                        | IllegalStateException exception
+        ) {
+
+            feedbackLabel.setText(
+                    exception.getMessage()
+            );
+        }
+    }
+
+    private void completeSelectedObjective() {
+
+        closeSelectedObjective(
+                "Finalizar objetivo",
+                "Finalizar",
+                "O objetivo será marcado como concluído, "
+                        + "sairá da lista ativa e seu progresso "
+                        + "será preservado.",
+                "Finalizar",
+                objectiveManager::completeObjective,
+                "Objetivo finalizado: "
+        );
+    }
+
+    private void markSelectedObjectiveNotFinished() {
+
+        closeSelectedObjective(
+                "Objetivo não finalizado",
+                "Marcar como não finalizado",
+                "O objetivo sairá da lista ativa, mas ficará "
+                        + "registrado como não finalizado.",
+                "Marcar",
+                objectiveManager::markObjectiveNotFinished,
+                "Objetivo marcado como não finalizado: "
+        );
+    }
+
+    private void closeSelectedObjective(
+            String title,
+            String headerAction,
+            String content,
+            String confirmationButtonText,
+            Consumer<UUID> closeAction,
+            String successMessagePrefix
+    ) {
+
+        Optional<Objective> selected =
+                objectiveManager
+                        .getSelectedObjective();
+
+        if (selected.isEmpty()) {
+
+            feedbackLabel.setText(
+                    "Selecione um objetivo primeiro."
+            );
+
+            return;
+        }
+
+        Objective objective =
+                selected.orElseThrow();
+
+        Alert confirmation =
+                new Alert(
+                        Alert.AlertType.CONFIRMATION
+                );
+
+        confirmation.setTitle(
+                title
+        );
+
+        confirmation.setHeaderText(
+                headerAction
+                        + " \""
+                        + objective.getName()
+                        + "\"?"
+        );
+
+        confirmation.setContentText(
+                content
+                        + "\n\nProgresso atual: "
+                        + objective.getProgressPercentage()
+                        + "%."
+        );
+
+        ButtonType confirmationButton =
+                new ButtonType(
+                        confirmationButtonText
+                );
+
+        confirmation
+                .getButtonTypes()
+                .setAll(
+                        confirmationButton,
+                        ButtonType.CANCEL
+                );
+
+        Optional<ButtonType> result =
+                confirmation.showAndWait();
+
+        if (
+                result.isEmpty()
+                        || result.get()
+                        != confirmationButton
+        ) {
+
+            return;
+        }
+
+        try {
+
+            closeAction.accept(
+                    objective.getId()
+            );
+
+            refreshObjectiveSelector();
+            bindClockToSelectedObjective();
+            refreshView();
+
+            if (persistState()) {
+
+                feedbackLabel.setText(
+                        successMessagePrefix
                                 + objective.getName()
                 );
             }
@@ -800,9 +968,7 @@ public final class FocusFlowApp extends Application {
             bindClockToSelectedObjective();
             refreshView();
 
-            if (
-                    persistState()
-            ) {
+            if (persistState()) {
 
                 feedbackLabel.setText(
                         "Objetivo removido: "
@@ -851,9 +1017,7 @@ public final class FocusFlowApp extends Application {
             bindClockToSelectedObjective();
             refreshView();
 
-            if (
-                    persistState()
-            ) {
+            if (persistState()) {
 
                 feedbackLabel.setText(
                         "Objetivo selecionado: "
@@ -907,9 +1071,7 @@ public final class FocusFlowApp extends Application {
 
             refreshView();
 
-            if (
-                    persistState()
-            ) {
+            if (persistState()) {
 
                 feedbackLabel.setText(
                         "Planejamento ajustado para "
@@ -1078,9 +1240,7 @@ public final class FocusFlowApp extends Application {
 
             refreshView();
 
-            if (
-                    persistState()
-            ) {
+            if (persistState()) {
 
                 feedbackLabel.setText(
                         successMessage
@@ -1152,6 +1312,14 @@ public final class FocusFlowApp extends Application {
                     true
             );
 
+            completeObjectiveButton.setDisable(
+                    true
+            );
+
+            notFinishedObjectiveButton.setDisable(
+                    true
+            );
+
             removeObjectiveButton.setDisable(
                     true
             );
@@ -1220,6 +1388,14 @@ public final class FocusFlowApp extends Application {
         );
 
         increaseCyclesButton.setDisable(
+                false
+        );
+
+        completeObjectiveButton.setDisable(
+                false
+        );
+
+        notFinishedObjectiveButton.setDisable(
                 false
         );
 
@@ -1308,10 +1484,6 @@ public final class FocusFlowApp extends Application {
                         || phase == PomodoroPhase.LONG_BREAK
         ) {
 
-            /*
-             * Teal para representar descanso,
-             * sem transmitir alerta ou erro.
-             */
             timerColor =
                     "#0F766E";
 

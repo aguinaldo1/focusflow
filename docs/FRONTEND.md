@@ -753,3 +753,47 @@ Foi adicionada a coluna:
 
 ```text
 saved_at
+
+---
+
+# BLOCO 19I — Ciclo de vida dos objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A interface passou a permitir o encerramento explícito de objetivos ativos.
+
+Foram adicionadas as ações:
+
+- `Finalizar` → `COMPLETED`;
+- `Não finalizado` → `NOT_FINISHED`;
+- `Remover` → `DISCARDED`.
+
+Todas as ações exigem confirmação antes do encerramento.
+
+Objetivos encerrados:
+
+- saem da lista de objetivos ativos;
+- liberam uma das 5 vagas disponíveis;
+- preservam progresso e ciclos realizados;
+- recebem `closed_at`;
+- continuam persistidos no SQLite.
+
+## Validação
+
+Foram mantidos **77 testes automatizados**, sem falhas.
+
+Também foram validados manualmente:
+
+- finalização de objetivo;
+- confirmação antes da finalização;
+- remoção da lista ativa;
+- marcação como não finalizado;
+- persistência de `COMPLETED`;
+- persistência de `NOT_FINISHED`;
+- preenchimento de `closed_at`.
+
+## Resultado
+
+O FocusFlow agora diferencia claramente objetivos concluídos, não finalizados e descartados, preparando a base para a visualização de histórico.
