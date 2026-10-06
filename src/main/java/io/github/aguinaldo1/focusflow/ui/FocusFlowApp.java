@@ -31,7 +31,6 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -39,7 +38,6 @@ import javafx.util.StringConverter;
 import java.awt.AWTException;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -64,13 +62,9 @@ public final class FocusFlowApp extends Application {
 
     private Label planningLabel;
     private Label plannedCyclesLabel;
-    private Label phaseLabel;
-    private Label timeLabel;
-    private Label statusLabel;
-    private Label cyclesLabel;
     private Label feedbackLabel;
 
-    private ProgressDonut progressDonut;
+    private PomodoroPanel pomodoroPanel;
 
     private Button addObjectiveButton;
 
@@ -102,7 +96,7 @@ public final class FocusFlowApp extends Application {
 
         createObjectiveControls();
         createPomodoroControls();
-        createProgressDonut();
+        createPomodoroPanel();
         createHistoryControl(
                 stage
         );
@@ -153,58 +147,6 @@ public final class FocusFlowApp extends Application {
                 Pos.CENTER
         );
 
-        VBox timerInformation =
-                new VBox(
-                        0,
-                        phaseLabel,
-                        timeLabel,
-                        statusLabel,
-                        cyclesLabel
-                );
-
-        timerInformation.setAlignment(
-                Pos.CENTER
-        );
-
-        StackPane timerArea =
-                new StackPane(
-                        timerInformation,
-                        progressDonut
-                );
-
-        timerArea.setPrefSize(
-                360,
-                112
-        );
-
-        timerArea.setMinHeight(
-                112
-        );
-
-        timerArea.setMaxWidth(
-                360
-        );
-
-        StackPane.setAlignment(
-                timerInformation,
-                Pos.CENTER
-        );
-
-        StackPane.setAlignment(
-                progressDonut,
-                Pos.TOP_LEFT
-        );
-
-        StackPane.setMargin(
-                progressDonut,
-                new Insets(
-                        3,
-                        0,
-                        0,
-                        20
-                )
-        );
-
         HBox pomodoroControls =
                 new HBox(
                         6,
@@ -247,7 +189,7 @@ public final class FocusFlowApp extends Application {
                         objectiveLifecycle,
                         planningLabel,
                         cycleAdjustment,
-                        timerArea,
+                        pomodoroPanel,
                         pomodoroControls,
                         historyControls,
                         feedbackLabel,
@@ -524,38 +466,6 @@ public final class FocusFlowApp extends Application {
 
     private void createPomodoroControls() {
 
-        phaseLabel =
-                new Label("-");
-
-        phaseLabel.setStyle(
-                "-fx-font-size: 11px;"
-                        + "-fx-font-weight: bold;"
-                        + "-fx-opacity: 0.72;"
-        );
-
-        timeLabel =
-                new Label("--:--");
-
-        statusLabel =
-                new Label(
-                        "SEM OBJETIVO"
-                );
-
-        statusLabel.setStyle(
-                "-fx-font-size: 10px;"
-                        + "-fx-opacity: 0.75;"
-        );
-
-        cyclesLabel =
-                new Label(
-                        "Ciclos concluídos: 0"
-                );
-
-        cyclesLabel.setStyle(
-                "-fx-font-size: 11px;"
-                        + "-fx-opacity: 0.85;"
-        );
-
         feedbackLabel =
                 new Label();
 
@@ -614,10 +524,6 @@ public final class FocusFlowApp extends Application {
                                 "Intervalo reiniciado."
                         )
         );
-
-        updateTimerAppearance(
-                null
-        );
     }
 
     private void createHistoryControl(
@@ -639,10 +545,10 @@ public final class FocusFlowApp extends Application {
         );
     }
 
-    private void createProgressDonut() {
+    private void createPomodoroPanel() {
 
-        progressDonut =
-                new ProgressDonut();
+        pomodoroPanel =
+                new PomodoroPanel();
     }
 
     private void addObjective() {
@@ -1254,29 +1160,8 @@ public final class FocusFlowApp extends Application {
                     true
             );
 
-            phaseLabel.setText(
-                    "-"
-            );
-
-            timeLabel.setText(
-                    "--:--"
-            );
-
-            statusLabel.setText(
-                    "SEM OBJETIVO"
-            );
-
-            cyclesLabel.setText(
-                    "Ciclos concluídos: 0"
-            );
-
-            updateProgressDonut(
-                    0
-            );
-
-            updateTimerAppearance(
-                    null
-            );
+            pomodoroPanel
+                    .showEmptyState();
 
             updateButtonsWithoutObjective();
             updateAddObjectiveControls();
@@ -1333,35 +1218,9 @@ public final class FocusFlowApp extends Application {
                 false
         );
 
-        phaseLabel.setText(
-                phaseDisplayName(
-                        snapshot.phase()
-                )
-        );
-
-        timeLabel.setText(
-                formatDuration(
-                        snapshot.remainingTime()
-                )
-        );
-
-        statusLabel.setText(
-                snapshot
-                        .status()
-                        .name()
-        );
-
-        cyclesLabel.setText(
-                "Ciclos concluídos: "
-                        + snapshot.completedFocusCycles()
-        );
-
-        updateProgressDonut(
+        pomodoroPanel.update(
+                snapshot,
                 objective.getProgressPercentage()
-        );
-
-        updateTimerAppearance(
-                snapshot.phase()
         );
 
         updateButtons(
@@ -1369,70 +1228,6 @@ public final class FocusFlowApp extends Application {
         );
 
         updateAddObjectiveControls();
-    }
-
-    private void updateProgressDonut(
-            int percentage
-    ) {
-
-        progressDonut
-                .setProgressPercentage(
-                        percentage
-                );
-    }
-
-    private void updateTimerAppearance(
-            PomodoroPhase phase
-    ) {
-
-        String timerColor;
-        String phaseColor;
-
-        if (
-                phase == PomodoroPhase.SHORT_BREAK
-                        || phase == PomodoroPhase.LONG_BREAK
-        ) {
-
-            timerColor =
-                    "#0F766E";
-
-            phaseColor =
-                    "#0F766E";
-
-        } else if (
-                phase == PomodoroPhase.FOCUS
-        ) {
-
-            timerColor =
-                    "#0F172A";
-
-            phaseColor =
-                    "#475569";
-
-        } else {
-
-            timerColor =
-                    "#64748B";
-
-            phaseColor =
-                    "#64748B";
-        }
-
-        timeLabel.setStyle(
-                "-fx-font-size: 50px;"
-                        + "-fx-font-weight: bold;"
-                        + "-fx-text-fill: "
-                        + timerColor
-                        + ";"
-        );
-
-        phaseLabel.setStyle(
-                "-fx-font-size: 11px;"
-                        + "-fx-font-weight: bold;"
-                        + "-fx-text-fill: "
-                        + phaseColor
-                        + ";"
-        );
     }
 
     private void updateAddObjectiveControls() {
@@ -1664,43 +1459,6 @@ public final class FocusFlowApp extends Application {
             case HARD ->
                     "Difícil";
         };
-    }
-
-    private static String phaseDisplayName(
-            PomodoroPhase phase
-    ) {
-
-        return switch (phase) {
-
-            case FOCUS ->
-                    "FOCO";
-
-            case SHORT_BREAK ->
-                    "PAUSA CURTA";
-
-            case LONG_BREAK ->
-                    "PAUSA LONGA";
-        };
-    }
-
-    private static String formatDuration(
-            Duration duration
-    ) {
-
-        long totalSeconds =
-                duration.toSeconds();
-
-        long minutes =
-                totalSeconds / 60;
-
-        long seconds =
-                totalSeconds % 60;
-
-        return String.format(
-                "%02d:%02d",
-                minutes,
-                seconds
-        );
     }
 
     @Override

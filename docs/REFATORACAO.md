@@ -43,3 +43,45 @@ O `FocusFlowApp` agora apenas cria o componente e informa o percentual atual.
 ## Resultado
 
 A primeira responsabilidade visual foi removida do `FocusFlowApp` sem alteração de comportamento.
+
+---
+
+# BLOCO 19K.2 — Extração do PomodoroPanel
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Separar a apresentação visual do timer da classe principal da aplicação.
+
+## Alterações
+
+Foi criado:
+
+`ui/PomodoroPanel.java`
+
+O componente passou a ser responsável por:
+
+- fase atual do Pomodoro;
+- tempo restante;
+- status do timer;
+- ciclos concluídos;
+- ProgressDonut;
+- aparência visual de foco e pausas;
+- estado visual sem objetivo selecionado.
+
+O `FocusFlowApp` agora apenas fornece o estado atual ao painel.
+
+## Validação
+
+- 78 testes automatizados passando;
+- `FocusFlowApp` utilizando `PomodoroPanel`;
+- timer e rosca preservados;
+- cores de FOCO e PAUSA preservadas;
+- controles do timer funcionando;
+- Histórico funcionando;
+- nenhuma regressão visual identificada.
+
+## Resultado
+
+A responsabilidade de apresentação do Pomodoro foi removida do `FocusFlowApp`, reduzindo o acoplamento da classe principal sem alterar o comportamento do aplicativo.
