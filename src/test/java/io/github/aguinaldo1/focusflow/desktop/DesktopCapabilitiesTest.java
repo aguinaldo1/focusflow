@@ -13,6 +13,19 @@ class DesktopCapabilitiesTest {
         assertFalse(
                 DesktopCapabilities.canUseSystemTray(
                         false,
+                        false,
+                        true
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectSystemTrayInsideWsl() {
+
+        assertFalse(
+                DesktopCapabilities.canUseSystemTray(
+                        true,
+                        true,
                         true
                 )
         );
@@ -24,17 +37,19 @@ class DesktopCapabilitiesTest {
         assertFalse(
                 DesktopCapabilities.canUseSystemTray(
                         true,
+                        false,
                         false
                 )
         );
     }
 
     @Test
-    void shouldAllowSystemTrayWhenBothCapabilitiesAreAvailable() {
+    void shouldAllowSystemTrayWhenEnvironmentSupportsIt() {
 
         assertTrue(
                 DesktopCapabilities.canUseSystemTray(
                         true,
+                        false,
                         true
                 )
         );

@@ -12,9 +12,18 @@ public final class DesktopCapabilities {
         return !GraphicsEnvironment.isHeadless();
     }
 
+    public static boolean isRunningOnWsl() {
+        return System.getenv("WSL_DISTRO_NAME") != null
+                || System.getenv("WSL_INTEROP") != null;
+    }
+
     public static boolean isSystemTrayAvailable() {
 
         if (!isGraphicalEnvironmentAvailable()) {
+            return false;
+        }
+
+        if (isRunningOnWsl()) {
             return false;
         }
 
@@ -23,10 +32,12 @@ public final class DesktopCapabilities {
 
     static boolean canUseSystemTray(
             boolean graphicalEnvironmentAvailable,
+            boolean runningOnWsl,
             boolean systemTraySupported
     ) {
 
         return graphicalEnvironmentAvailable
+                && !runningOnWsl
                 && systemTraySupported;
     }
 }

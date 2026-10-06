@@ -252,3 +252,17 @@ No ambiente atual WSL2/WSLg:
 ```text
 Headless: false
 SystemTray supported: false
+
+### Refinamento WSL
+
+A detecção de `SystemTray` passou a reconhecer previamente ambientes WSL.
+
+Quando executado no WSL, o FocusFlow retorna `SystemTray = false` sem realizar a consulta nativa ao AWT, evitando inicialização desnecessária e mantendo os testes independentes da plataforma.
+
+Validação:
+
+```text
+WSL_DISTRO_NAME=Ubuntu-24.04
+Tests run: 27
+Failures: 0
+Errors: 0
