@@ -22,9 +22,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -33,7 +31,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 import java.awt.AWTException;
 import java.nio.file.Path;
@@ -55,26 +52,12 @@ public final class FocusFlowApp extends Application {
     private SystemAlert systemAlert;
     private SystemTrayIntegration systemTrayIntegration;
 
-    private TextField objectiveNameField;
-
-    private ComboBox<ComplexityOption> complexityComboBox;
-    private ComboBox<Objective> objectiveSelector;
-
-    private Label planningLabel;
-    private Label plannedCyclesLabel;
     private Label feedbackLabel;
 
+    private ObjectivePanel objectivePanel;
     private PomodoroPanel pomodoroPanel;
 
-    private Button addObjectiveButton;
-
-    private Button completeObjectiveButton;
-    private Button notFinishedObjectiveButton;
-    private Button removeObjectiveButton;
     private Button historyButton;
-
-    private Button decreaseCyclesButton;
-    private Button increaseCyclesButton;
 
     private Button startButton;
     private Button pauseButton;
@@ -94,57 +77,11 @@ public final class FocusFlowApp extends Application {
         systemTrayIntegration =
                 new SystemTrayIntegration();
 
-        createObjectiveControls();
+        createObjectivePanel();
         createPomodoroControls();
         createPomodoroPanel();
         createHistoryControl(
                 stage
-        );
-
-        HBox objectiveInput =
-                new HBox(
-                        6,
-                        objectiveNameField,
-                        complexityComboBox,
-                        addObjectiveButton
-                );
-
-        objectiveInput.setAlignment(
-                Pos.CENTER
-        );
-
-        HBox objectiveSelection =
-                new HBox(
-                        6,
-                        objectiveSelector
-                );
-
-        objectiveSelection.setAlignment(
-                Pos.CENTER
-        );
-
-        HBox objectiveLifecycle =
-                new HBox(
-                        6,
-                        completeObjectiveButton,
-                        notFinishedObjectiveButton,
-                        removeObjectiveButton
-                );
-
-        objectiveLifecycle.setAlignment(
-                Pos.CENTER
-        );
-
-        HBox cycleAdjustment =
-                new HBox(
-                        8,
-                        decreaseCyclesButton,
-                        plannedCyclesLabel,
-                        increaseCyclesButton
-                );
-
-        cycleAdjustment.setAlignment(
-                Pos.CENTER
         );
 
         HBox pomodoroControls =
@@ -184,11 +121,7 @@ public final class FocusFlowApp extends Application {
         VBox root =
                 new VBox(
                         7,
-                        objectiveInput,
-                        objectiveSelection,
-                        objectiveLifecycle,
-                        planningLabel,
-                        cycleAdjustment,
+                        objectivePanel,
                         pomodoroPanel,
                         pomodoroControls,
                         historyControls,
@@ -286,182 +219,17 @@ public final class FocusFlowApp extends Application {
         }
     }
 
-    private void createObjectiveControls() {
+    private void createObjectivePanel() {
 
-        objectiveNameField =
-                new TextField();
-
-        objectiveNameField.setPromptText(
-                "Digite seu objetivo..."
-        );
-
-        objectiveNameField.setPrefColumnCount(
-                14
-        );
-
-        complexityComboBox =
-                new ComboBox<>();
-
-        complexityComboBox
-                .getItems()
-                .addAll(
-                        ComplexityOption.values()
+        objectivePanel =
+                new ObjectivePanel(
+                        this::addObjective,
+                        this::selectObjectiveFromInterface,
+                        this::completeSelectedObjective,
+                        this::markSelectedObjectiveNotFinished,
+                        this::removeSelectedObjective,
+                        this::adjustPlannedCycles
                 );
-
-        complexityComboBox.setValue(
-                ComplexityOption.MEDIUM
-        );
-
-        addObjectiveButton =
-                new Button(
-                        "Adicionar"
-                );
-
-        addObjectiveButton.setOnAction(
-                event -> addObjective()
-        );
-
-        objectiveSelector =
-                new ComboBox<>();
-
-        objectiveSelector.setPromptText(
-                "Selecione um objetivo..."
-        );
-
-        objectiveSelector.setPrefWidth(
-                250
-        );
-
-        objectiveSelector.setDisable(
-                true
-        );
-
-        objectiveSelector.setConverter(
-                new StringConverter<>() {
-
-                    @Override
-                    public String toString(
-                            Objective objective
-                    ) {
-
-                        if (objective == null) {
-                            return "";
-                        }
-
-                        return objective.getName();
-                    }
-
-                    @Override
-                    public Objective fromString(
-                            String value
-                    ) {
-
-                        return null;
-                    }
-                }
-        );
-
-        objectiveSelector.setOnAction(
-                event -> {
-
-                    Objective selectedObjective =
-                            objectiveSelector.getValue();
-
-                    if (selectedObjective == null) {
-                        return;
-                    }
-
-                    selectObjectiveFromInterface(
-                            selectedObjective
-                    );
-                }
-        );
-
-        completeObjectiveButton =
-                new Button(
-                        "Finalizar"
-                );
-
-        completeObjectiveButton.setDisable(
-                true
-        );
-
-        completeObjectiveButton.setOnAction(
-                event ->
-                        completeSelectedObjective()
-        );
-
-        notFinishedObjectiveButton =
-                new Button(
-                        "Não finalizado"
-                );
-
-        notFinishedObjectiveButton.setDisable(
-                true
-        );
-
-        notFinishedObjectiveButton.setOnAction(
-                event ->
-                        markSelectedObjectiveNotFinished()
-        );
-
-        removeObjectiveButton =
-                new Button(
-                        "Remover"
-                );
-
-        removeObjectiveButton.setDisable(
-                true
-        );
-
-        removeObjectiveButton.setOnAction(
-                event ->
-                        removeSelectedObjective()
-        );
-
-        planningLabel =
-                new Label(
-                        "Cadastre um objetivo para começar."
-                );
-
-        planningLabel.setStyle(
-                "-fx-font-size: 11px;"
-                        + "-fx-opacity: 0.75;"
-        );
-
-        decreaseCyclesButton =
-                new Button(
-                        "−"
-                );
-
-        increaseCyclesButton =
-                new Button(
-                        "+"
-                );
-
-        plannedCyclesLabel =
-                new Label(
-                        "0 ciclos"
-                );
-
-        plannedCyclesLabel.setStyle(
-                "-fx-font-size: 12px;"
-                        + "-fx-font-weight: bold;"
-        );
-
-        decreaseCyclesButton.setOnAction(
-                event ->
-                        adjustPlannedCycles(
-                                -1
-                        )
-        );
-
-        increaseCyclesButton.setOnAction(
-                event ->
-                        adjustPlannedCycles(
-                                1
-                        )
-        );
     }
 
     private void createPomodoroControls() {
@@ -555,8 +323,9 @@ public final class FocusFlowApp extends Application {
 
         try {
 
-            ComplexityOption selectedComplexity =
-                    complexityComboBox.getValue();
+            ObjectiveComplexity selectedComplexity =
+                    objectivePanel
+                            .getSelectedComplexity();
 
             if (selectedComplexity == null) {
 
@@ -569,17 +338,18 @@ public final class FocusFlowApp extends Application {
 
             Objective objective =
                     objectiveManager.addObjective(
-                            objectiveNameField.getText(),
+                            objectivePanel
+                                    .getObjectiveName(),
                             "",
                             selectedComplexity
-                                    .complexity()
                     );
 
             objectiveManager.selectObjective(
                     objective.getId()
             );
 
-            objectiveNameField.clear();
+            objectivePanel
+                    .clearObjectiveName();
 
             refreshObjectiveSelector();
             bindClockToSelectedObjective();
@@ -927,26 +697,15 @@ public final class FocusFlowApp extends Application {
 
     private void refreshObjectiveSelector() {
 
-        objectiveSelector
-                .getItems()
-                .setAll(
-                        objectiveManager
-                                .getActiveObjectives()
-                );
-
         Objective selectedObjective =
                 objectiveManager
                         .getSelectedObjective()
                         .orElse(null);
 
-        objectiveSelector.setValue(
-                selectedObjective
-        );
-
-        objectiveSelector.setDisable(
+        objectivePanel.refreshObjectives(
                 objectiveManager
-                        .getActiveObjectiveCount()
-                        == 0
+                        .getActiveObjectives(),
+                selectedObjective
         );
     }
 
@@ -1132,33 +891,8 @@ public final class FocusFlowApp extends Application {
 
         if (selected.isEmpty()) {
 
-            planningLabel.setText(
-                    "Cadastre um objetivo para começar."
-            );
-
-            plannedCyclesLabel.setText(
-                    "0 ciclos"
-            );
-
-            decreaseCyclesButton.setDisable(
-                    true
-            );
-
-            increaseCyclesButton.setDisable(
-                    true
-            );
-
-            completeObjectiveButton.setDisable(
-                    true
-            );
-
-            notFinishedObjectiveButton.setDisable(
-                    true
-            );
-
-            removeObjectiveButton.setDisable(
-                    true
-            );
+            objectivePanel
+                    .showEmptyState();
 
             pomodoroPanel
                     .showEmptyState();
@@ -1177,45 +911,9 @@ public final class FocusFlowApp extends Application {
                         .getTimer()
                         .snapshot();
 
-        planningLabel.setText(
-                complexityLabel(
-                        objective.getComplexity()
-                )
-                        + " • planejamento"
-        );
-
-        plannedCyclesLabel.setText(
-                objective
-                        .getPlannedFocusCycles()
-                        + " ciclos"
-        );
-
-        int minimumPlannedCycles =
-                Math.max(
-                        1,
-                        snapshot.completedFocusCycles()
-                );
-
-        decreaseCyclesButton.setDisable(
-                objective
-                        .getPlannedFocusCycles()
-                        <= minimumPlannedCycles
-        );
-
-        increaseCyclesButton.setDisable(
-                false
-        );
-
-        completeObjectiveButton.setDisable(
-                false
-        );
-
-        notFinishedObjectiveButton.setDisable(
-                false
-        );
-
-        removeObjectiveButton.setDisable(
-                false
+        objectivePanel.showObjective(
+                objective,
+                snapshot.completedFocusCycles()
         );
 
         pomodoroPanel.update(
@@ -1238,17 +936,10 @@ public final class FocusFlowApp extends Application {
                         >= ObjectiveManager
                         .MAX_ACTIVE_OBJECTIVES;
 
-        addObjectiveButton.setDisable(
-                limitReached
-        );
-
-        objectiveNameField.setDisable(
-                limitReached
-        );
-
-        complexityComboBox.setDisable(
-                limitReached
-        );
+        objectivePanel
+                .setAddControlsDisabled(
+                        limitReached
+                );
     }
 
     private void updateButtonsWithoutObjective() {
@@ -1444,23 +1135,6 @@ public final class FocusFlowApp extends Application {
         stage.requestFocus();
     }
 
-    private static String complexityLabel(
-            ObjectiveComplexity complexity
-    ) {
-
-        return switch (complexity) {
-
-            case EASY ->
-                    "Fácil";
-
-            case MEDIUM ->
-                    "Médio";
-
-            case HARD ->
-                    "Difícil";
-        };
-    }
-
     @Override
     public void stop() {
 
@@ -1508,47 +1182,4 @@ public final class FocusFlowApp extends Application {
         launch(args);
     }
 
-    private enum ComplexityOption {
-
-        EASY(
-                "Fácil",
-                ObjectiveComplexity.EASY
-        ),
-
-        MEDIUM(
-                "Médio",
-                ObjectiveComplexity.MEDIUM
-        ),
-
-        HARD(
-                "Difícil",
-                ObjectiveComplexity.HARD
-        );
-
-        private final String label;
-        private final ObjectiveComplexity complexity;
-
-        ComplexityOption(
-                String label,
-                ObjectiveComplexity complexity
-        ) {
-
-            this.label =
-                    label;
-
-            this.complexity =
-                    complexity;
-        }
-
-        public ObjectiveComplexity complexity() {
-
-            return complexity;
-        }
-
-        @Override
-        public String toString() {
-
-            return label;
-        }
-    }
 }

@@ -85,3 +85,47 @@ O `FocusFlowApp` agora apenas fornece o estado atual ao painel.
 ## Resultado
 
 A responsabilidade de apresentação do Pomodoro foi removida do `FocusFlowApp`, reduzindo o acoplamento da classe principal sem alterar o comportamento do aplicativo.
+
+---
+
+# BLOCO 19K.3 — Extração do ObjectivePanel
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Separar da classe principal a apresentação e os controles relacionados aos objetivos.
+
+## Alterações
+
+Foi criado:
+
+`ui/ObjectivePanel.java`
+
+O componente passou a concentrar:
+
+- cadastro de objetivos;
+- seleção de objetivo ativo;
+- escolha de complexidade;
+- planejamento de ciclos;
+- aumento e redução dos ciclos planejados;
+- ações de Finalizar, Não finalizado e Remover;
+- estado visual com e sem objetivo selecionado;
+- bloqueio de novos cadastros ao atingir o limite de objetivos ativos.
+
+O `FocusFlowApp` continua coordenando as ações de domínio, persistência e timer, enquanto o `ObjectivePanel` cuida da apresentação dos objetivos.
+
+## Validação
+
+- 78 testes automatizados passando;
+- cadastro e seleção funcionando;
+- complexidades Fácil, Médio e Difícil preservadas;
+- planejamento de ciclos funcionando;
+- Finalizar, Não finalizado e Remover funcionando;
+- timer e ProgressDonut preservados;
+- Histórico preservado;
+- nenhuma regressão visual identificada.
+
+## Resultado
+
+A interface de objetivos foi isolada em um componente próprio, reduzindo significativamente as responsabilidades do `FocusFlowApp`.
