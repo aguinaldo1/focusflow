@@ -30,35 +30,40 @@ public class PomodoroTimer {
         session.resume();
     }
 
-    public synchronized void elapse(Duration elapsedTime) {
+public synchronized boolean elapse(
+        Duration elapsed
+) {
 
-        Objects.requireNonNull(
-                elapsedTime,
-                "Elapsed time cannot be null."
+    if (elapsed == null
+            || elapsed.isZero()
+            || elapsed.isNegative()) {
+
+        throw new IllegalArgumentException(
+                "Elapsed duration must be positive."
         );
-
-        if (elapsedTime.isNegative() || elapsedTime.isZero()) {
-            throw new IllegalArgumentException(
-                    "Elapsed time must be positive."
-            );
-        }
-
-        if (session.getStatus() != PomodoroStatus.RUNNING) {
-            return;
-        }
-
-        if (elapsedTime.compareTo(remainingTime) >= 0) {
-
-            session.completeCurrentInterval();
-
-            remainingTime = session.getCurrentDuration();
-
-            return;
-        }
-
-        remainingTime = remainingTime.minus(elapsedTime);
     }
 
+    if (session.getStatus()
+            != PomodoroStatus.RUNNING) {
+
+        return false;
+    }
+
+    if (elapsed.compareTo(remainingTime) >= 0) {
+
+        session.completeCurrentInterval();
+
+        remainingTime =
+                session.getCurrentDuration();
+
+        return true;
+    }
+
+    remainingTime =
+            remainingTime.minus(elapsed);
+
+    return false;
+}
     public synchronized void reset() {
 
         session.reset();

@@ -1,6 +1,7 @@
 package io.github.aguinaldo1.focusflow.ui;
 
 import io.github.aguinaldo1.focusflow.desktop.SystemTrayIntegration;
+import io.github.aguinaldo1.focusflow.desktop.SystemAlert;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroClock;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSession;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
@@ -53,9 +54,16 @@ public final class FocusFlowApp extends Application {
         timer =
                 new PomodoroTimer(session);
 
-        clock =
-                new PomodoroClock(timer);
+	SystemAlert systemAlert =
+        	new SystemAlert();
 
+	clock =
+        	new PomodoroClock(
+                	timer,
+                	() -> Platform.runLater(
+                        	systemAlert::playTimerFinished
+                	)
+        	);
         systemTrayIntegration =
                 new SystemTrayIntegration();
 

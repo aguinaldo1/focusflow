@@ -13,25 +13,49 @@ public final class PomodoroClock implements AutoCloseable {
             Duration.ofSeconds(1);
 
     private final PomodoroTimer timer;
+    private final Runnable intervalCompletedAction;
+
     private final ScheduledExecutorService scheduler;
 
     private ScheduledFuture<?> tickTask;
 
-    public PomodoroClock(PomodoroTimer timer) {
+    public PomodoroClock(
+            PomodoroTimer timer
+    ) {
 
-        this.timer = Objects.requireNonNull(
+        this(
                 timer,
-                "Pomodoro timer cannot be null."
+                () -> {
+                }
         );
+    }
+
+    public PomodoroClock(
+            PomodoroTimer timer,
+            Runnable intervalCompletedAction
+    ) {
+
+        this.timer =
+                Objects.requireNonNull(
+                        timer,
+                        "timer"
+                );
+
+        this.intervalCompletedAction =
+                Objects.requireNonNull(
+                        intervalCompletedAction,
+                        "intervalCompletedAction"
+                );
 
         this.scheduler =
                 Executors.newSingleThreadScheduledExecutor(
                         runnable -> {
 
-                            Thread thread = new Thread(
-                                    runnable,
-                                    "focusflow-pomodoro-clock"
-                            );
+                            Thread thread =
+                                    new Thread(
+                                            runnable,
+                                            "focusflow-pomodoro-clock"
+                                    );
 
                             thread.setDaemon(true);
 
@@ -46,12 +70,13 @@ public final class PomodoroClock implements AutoCloseable {
             return;
         }
 
-        tickTask = scheduler.scheduleAtFixedRate(
-                this::tick,
-                TICK_INTERVAL.toSeconds(),
-                TICK_INTERVAL.toSeconds(),
-                TimeUnit.SECONDS
-        );
+        tickTask =
+                scheduler.scheduleAtFixedRate(
+                        this::tick,
+                        1,
+                        1,
+                        TimeUnit.SECONDS
+                );
     }
 
     public synchronized void stop() {
@@ -61,6 +86,7 @@ public final class PomodoroClock implements AutoCloseable {
         }
 
         tickTask.cancel(false);
+
         tickTask = null;
     }
 
@@ -72,7 +98,15 @@ public final class PomodoroClock implements AutoCloseable {
     }
 
     void tick() {
-        timer.elapse(TICK_INTERVAL);
+
+        boolean intervalCompleted =
+                timer.elapse(
+                        TICK_INTERVAL
+                );
+
+        if (intervalCompleted) {
+            intervalCompletedAction.run();
+        }
     }
 
     @Override

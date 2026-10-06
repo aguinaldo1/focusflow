@@ -304,3 +304,28 @@ Tests run: 27
 Failures: 0
 Errors: 0
 BUILD SUCCESS
+
+---
+
+# BLOCO 16C — Alerta sonoro do timer
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+O `PomodoroTimer` passou a informar quando um intervalo termina.
+
+O `PomodoroClock` utiliza esse evento para disparar uma ação de conclusão, atualmente conectada ao `SystemAlert`.
+
+Fluxo:
+
+```text
+PomodoroTimer
+    ↓
+intervalo concluído
+    ↓
+PomodoroClock
+    ↓
+SystemAlert
+    ↓
+alerta sonoro
