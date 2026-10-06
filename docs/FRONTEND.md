@@ -388,3 +388,20 @@ Tests run: 43
 Failures: 0
 Errors: 0
 BUILD SUCCESS
+
+---
+
+# BLOCO 17C — Ciclo de vida dos objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+O `ObjectiveManager` passou a coordenar o encerramento dos objetivos.
+
+Operações disponíveis:
+
+```text
+completeObjective(...)
+markObjectiveNotFinished(...)
+discardObjective(...)

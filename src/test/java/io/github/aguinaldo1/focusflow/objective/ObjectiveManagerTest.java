@@ -2,7 +2,7 @@ package io.github.aguinaldo1.focusflow.objective;
 
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 import org.junit.jupiter.api.Test;
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -272,4 +272,158 @@ class ObjectiveManagerTest {
                 newObjective.getStatus()
         );
     }
+
+	@Test
+void shouldCompleteSelectedObjectiveAndSelectNextActiveOne() {
+
+    ObjectiveManager manager =
+            new ObjectiveManager();
+
+    Objective javaObjective =
+            manager.addObjective(
+                    "Curso Java",
+                    ""
+            );
+
+    Objective dockerObjective =
+            manager.addObjective(
+                    "Curso Docker",
+                    ""
+            );
+
+    javaObjective
+            .getTimer()
+            .start();
+
+    manager.completeObjective(
+            javaObjective.getId()
+    );
+
+    assertEquals(
+            ObjectiveStatus.COMPLETED,
+            javaObjective.getStatus()
+    );
+
+    assertEquals(
+            PomodoroStatus.PAUSED,
+            javaObjective
+                    .getTimer()
+                    .snapshot()
+                    .status()
+    );
+
+    assertSame(
+            dockerObjective,
+            manager.getSelectedObjective()
+                    .orElseThrow()
+    );
+
+    assertEquals(
+            PomodoroStatus.IDLE,
+            dockerObjective
+                    .getTimer()
+                    .snapshot()
+                    .status()
+    );
+}
+
+@Test
+void shouldMarkObjectiveAsNotFinishedThroughManager() {
+
+    ObjectiveManager manager =
+            new ObjectiveManager();
+
+    Objective objective =
+            manager.addObjective(
+                    "Estudar Kubernetes",
+                    ""
+            );
+
+    manager.markObjectiveNotFinished(
+            objective.getId()
+    );
+
+    assertEquals(
+            ObjectiveStatus.NOT_FINISHED,
+            objective.getStatus()
+    );
+}
+
+@Test
+void shouldDiscardObjectiveThroughManager() {
+
+    ObjectiveManager manager =
+            new ObjectiveManager();
+
+    Objective objective =
+            manager.addObjective(
+                    "Curso antigo",
+                    ""
+            );
+
+    manager.discardObjective(
+            objective.getId()
+    );
+
+    assertEquals(
+            ObjectiveStatus.DISCARDED,
+            objective.getStatus()
+    );
+}
+
+@Test
+void shouldKeepCurrentSelectionWhenClosingAnotherObjective() {
+
+    ObjectiveManager manager =
+            new ObjectiveManager();
+
+    Objective javaObjective =
+            manager.addObjective(
+                    "Curso Java",
+                    ""
+            );
+
+    Objective dockerObjective =
+            manager.addObjective(
+                    "Curso Docker",
+                    ""
+            );
+
+    manager.discardObjective(
+            dockerObjective.getId()
+    );
+
+    assertSame(
+            javaObjective,
+            manager.getSelectedObjective()
+                    .orElseThrow()
+    );
+
+    assertEquals(
+            ObjectiveStatus.DISCARDED,
+            dockerObjective.getStatus()
+    );
+}
+
+@Test
+void shouldClearSelectionWhenLastActiveObjectiveIsClosed() {
+
+    ObjectiveManager manager =
+            new ObjectiveManager();
+
+    Objective objective =
+            manager.addObjective(
+                    "Curso Java",
+                    ""
+            );
+
+    manager.completeObjective(
+            objective.getId()
+    );
+
+    assertTrue(
+            manager.getSelectedObjective()
+                    .isEmpty()
+    );
+}
 }

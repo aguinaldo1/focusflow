@@ -4,6 +4,7 @@ import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -83,6 +84,37 @@ public final class ObjectiveManager {
                 target;
     }
 
+
+	public synchronized void completeObjective(
+        UUID objectiveId
+) {
+
+    closeObjective(
+            objectiveId,
+            Objective::complete
+    );
+}
+
+public synchronized void markObjectiveNotFinished(
+        UUID objectiveId
+) {
+
+    closeObjective(
+            objectiveId,
+            Objective::markNotFinished
+    );
+}
+
+public synchronized void discardObjective(
+        UUID objectiveId
+) {
+
+    closeObjective(
+            objectiveId,
+            Objective::discard
+    );
+}
+
     public synchronized Optional<Objective>
     getSelectedObjective() {
 
@@ -117,6 +149,46 @@ public final class ObjectiveManager {
                 )
                 .count();
     }
+
+	private void closeObjective(
+        UUID objectiveId,
+        Consumer<Objective> closeAction
+) {
+
+    Objects.requireNonNull(
+            objectiveId,
+            "objectiveId"
+    );
+
+    Objects.requireNonNull(
+            closeAction,
+            "closeAction"
+    );
+
+    Objective objective =
+            findObjective(
+                    objectiveId
+            );
+
+    closeAction.accept(
+            objective
+    );
+
+    if (objective == selectedObjective) {
+        selectNextActiveObjective();
+    }
+}
+
+private void selectNextActiveObjective() {
+
+    selectedObjective =
+            objectives.stream()
+                    .filter(
+                            Objective::isActive
+                    )
+                    .findFirst()
+                    .orElse(null);
+}
 
     private Objective findObjective(
             UUID objectiveId
