@@ -436,3 +436,42 @@ pomodoro_phase
 pomodoro_status
 completed_focus_cycles
 remaining_seconds
+
+---
+
+# BLOCO 18B — Repository SQLite de objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi criado o `SqliteObjectiveRepository`, responsável por persistir os objetivos no SQLite.
+
+Também foi criado o `PersistedObjective`, que representa os dados recuperados do banco sem misturar persistência com comportamento de domínio.
+
+O repository armazena:
+
+- identificação;
+- nome e descrição;
+- status do objetivo;
+- datas;
+- fase do Pomodoro;
+- estado do Pomodoro;
+- ciclos concluídos;
+- tempo restante.
+
+A gravação utiliza `INSERT ... ON CONFLICT DO UPDATE`, evitando duplicação do mesmo objetivo.
+
+## Validação
+
+Foram validados:
+
+- salvamento de objetivo ativo;
+- persistência do progresso do Pomodoro;
+- atualização de objetivo existente após mudança de status.
+
+```text
+Tests run: 53
+Failures: 0
+Errors: 0
+BUILD SUCCESS
