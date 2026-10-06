@@ -695,3 +695,18 @@ Validado:
 ## Próximo passo
 
 **Gráfico de progresso do objetivo em formato de rosca.**
+
+---
+
+# BLOCO 19F — Progresso visual do objetivo
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi adicionado um indicador de progresso em formato de rosca.
+
+O percentual representa:
+
+```text
+ciclos concluídos / ciclos planejados

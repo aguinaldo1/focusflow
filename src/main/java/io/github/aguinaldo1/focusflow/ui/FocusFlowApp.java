@@ -29,7 +29,13 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.ArcType;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
@@ -61,6 +67,10 @@ public final class FocusFlowApp extends Application {
     private Label cyclesLabel;
     private Label feedbackLabel;
 
+    private Label progressPercentageLabel;
+    private Arc progressArc;
+    private StackPane progressDonut;
+
     private Button addObjectiveButton;
     private Button removeObjectiveButton;
 
@@ -88,6 +98,7 @@ public final class FocusFlowApp extends Application {
 
         createObjectiveControls();
         createPomodoroControls();
+        createProgressDonut();
 
         HBox objectiveInput =
                 new HBox(
@@ -124,6 +135,58 @@ public final class FocusFlowApp extends Application {
                 Pos.CENTER
         );
 
+        VBox timerInformation =
+                new VBox(
+                        0,
+                        phaseLabel,
+                        timeLabel,
+                        statusLabel,
+                        cyclesLabel
+                );
+
+        timerInformation.setAlignment(
+                Pos.CENTER
+        );
+
+        StackPane timerArea =
+                new StackPane(
+                        timerInformation,
+                        progressDonut
+                );
+
+        timerArea.setPrefSize(
+                360,
+                112
+        );
+
+        timerArea.setMinHeight(
+                112
+        );
+
+        timerArea.setMaxWidth(
+                360
+        );
+
+        StackPane.setAlignment(
+                timerInformation,
+                Pos.CENTER
+        );
+
+        StackPane.setAlignment(
+                progressDonut,
+                Pos.TOP_LEFT
+        );
+
+        StackPane.setMargin(
+                progressDonut,
+                new Insets(
+                        3,
+                        0,
+                        0,
+                        20
+                )
+        );
+
         HBox pomodoroControls =
                 new HBox(
                         6,
@@ -155,10 +218,7 @@ public final class FocusFlowApp extends Application {
                         objectiveSelection,
                         planningLabel,
                         cycleAdjustment,
-                        phaseLabel,
-                        timeLabel,
-                        statusLabel,
-                        cyclesLabel,
+                        timerArea,
                         pomodoroControls,
                         feedbackLabel,
                         shortcutsLabel
@@ -364,14 +424,16 @@ public final class FocusFlowApp extends Application {
                 new Label("-");
 
         phaseLabel.setStyle(
-                "-fx-font-size: 12px;"
+                "-fx-font-size: 11px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-opacity: 0.72;"
         );
 
         timeLabel =
                 new Label("--:--");
 
         timeLabel.setStyle(
-                "-fx-font-size: 42px;"
+                "-fx-font-size: 50px;"
                         + "-fx-font-weight: bold;"
         );
 
@@ -381,7 +443,8 @@ public final class FocusFlowApp extends Application {
                 );
 
         statusLabel.setStyle(
-                "-fx-font-size: 11px;"
+                "-fx-font-size: 10px;"
+                        + "-fx-opacity: 0.75;"
         );
 
         cyclesLabel =
@@ -391,6 +454,7 @@ public final class FocusFlowApp extends Application {
 
         cyclesLabel.setStyle(
                 "-fx-font-size: 11px;"
+                        + "-fx-opacity: 0.85;"
         );
 
         feedbackLabel =
@@ -450,6 +514,101 @@ public final class FocusFlowApp extends Application {
                                 PomodoroTimer::reset,
                                 "Pomodoro reiniciado."
                         )
+        );
+    }
+
+    private void createProgressDonut() {
+
+        Circle backgroundRing =
+                new Circle(
+                        27
+                );
+
+        backgroundRing.setFill(
+                Color.TRANSPARENT
+        );
+
+        backgroundRing.setStroke(
+                Color.web(
+                        "#E2E8F0"
+                )
+        );
+
+        backgroundRing.setStrokeWidth(
+                5
+        );
+
+        progressArc =
+                new Arc(
+                        0,
+                        0,
+                        27,
+                        27,
+                        90,
+                        0
+                );
+
+        progressArc.setType(
+                ArcType.OPEN
+        );
+
+        progressArc.setFill(
+                Color.TRANSPARENT
+        );
+
+        progressArc.setStroke(
+                Color.web(
+                        "#4F46E5"
+                )
+        );
+
+        progressArc.setStrokeWidth(
+                5
+        );
+
+        progressArc.setStrokeLineCap(
+                StrokeLineCap.ROUND
+        );
+
+        progressPercentageLabel =
+                new Label(
+                        "0%"
+                );
+
+        progressPercentageLabel.setStyle(
+                "-fx-font-size: 11px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #334155;"
+        );
+
+        progressDonut =
+                new StackPane(
+                        backgroundRing,
+                        progressArc,
+                        progressPercentageLabel
+                );
+
+        progressDonut.setMinSize(
+                66,
+                66
+        );
+
+        progressDonut.setPrefSize(
+                66,
+                66
+        );
+
+        progressDonut.setMaxSize(
+                66,
+                66
+        );
+
+        /*
+         * Eleva a rosca sem alterar a posição
+         * central do cronômetro.
+         */
+        progressDonut.setTranslateY(
+                -12
         );
     }
 
@@ -836,6 +995,10 @@ public final class FocusFlowApp extends Application {
                     "Ciclos concluídos: 0"
             );
 
+            updateProgressDonut(
+                    0
+            );
+
             updateButtonsWithoutObjective();
             updateAddObjectiveControls();
 
@@ -906,11 +1069,40 @@ public final class FocusFlowApp extends Application {
                         + snapshot.completedFocusCycles()
         );
 
+        updateProgressDonut(
+                objective.getProgressPercentage()
+        );
+
         updateButtons(
                 snapshot.status()
         );
 
         updateAddObjectiveControls();
+    }
+
+    private void updateProgressDonut(
+            int percentage
+    ) {
+
+        int normalizedPercentage =
+                Math.max(
+                        0,
+                        Math.min(
+                                100,
+                                percentage
+                        )
+                );
+
+        progressPercentageLabel.setText(
+                normalizedPercentage
+                        + "%"
+        );
+
+        progressArc.setLength(
+                -360.0
+                        * normalizedPercentage
+                        / 100.0
+        );
     }
 
     private void updateAddObjectiveControls() {
