@@ -231,3 +231,24 @@ Ctrl + I → Iniciar
 Ctrl + P → Pausar
 Ctrl + C → Continuar
 Ctrl + R → Resetar
+
+---
+
+# BLOCO 16A — Capacidades do ambiente desktop
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi criada uma camada para detectar capacidades específicas do ambiente desktop.
+
+O FocusFlow agora consegue identificar:
+
+- disponibilidade de ambiente gráfico;
+- disponibilidade de `SystemTray`.
+
+No ambiente atual WSL2/WSLg:
+
+```text
+Headless: false
+SystemTray supported: false
