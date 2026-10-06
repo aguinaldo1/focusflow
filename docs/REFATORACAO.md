@@ -171,3 +171,50 @@ O `FocusFlowApp` continua responsável pelas ações executadas por cada control
 ## Resultado
 
 Os controles do Pomodoro foram isolados em um componente próprio, reduzindo mais uma responsabilidade visual do `FocusFlowApp`.
+
+---
+
+# BLOCO 19K.5 — Extração dos diálogos de ciclo de vida
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Remover do `FocusFlowApp` a responsabilidade de construir os diálogos de confirmação relacionados ao ciclo de vida dos objetivos.
+
+## Alterações
+
+Foi criado:
+
+`ui/ObjectiveLifecycleDialogs.java`
+
+A classe passou a concentrar as confirmações de:
+
+- Finalizar;
+- Não finalizado;
+- Remover.
+
+Também foram mantidos:
+
+- nome do objetivo na confirmação;
+- progresso atual para Finalizar e Não finalizado;
+- mensagem de descarte para Remover;
+- possibilidade de cancelar a operação.
+
+O `FocusFlowApp` continua responsável por executar as ações de domínio após a confirmação do usuário.
+
+## Validação
+
+- 78 testes automatizados passando;
+- diálogos integrados ao `FocusFlowApp`;
+- Finalizar funcionando;
+- Não finalizado funcionando;
+- Remover funcionando;
+- cancelamento preservado;
+- progresso exibido nas confirmações corretas;
+- Histórico preservado;
+- nenhuma regressão visual identificada.
+
+## Resultado
+
+Os diálogos de ciclo de vida foram isolados da classe principal, reduzindo responsabilidade visual e duplicação no `FocusFlowApp`.

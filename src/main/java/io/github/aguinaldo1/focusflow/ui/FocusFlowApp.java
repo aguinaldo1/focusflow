@@ -18,9 +18,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
@@ -37,6 +35,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public final class FocusFlowApp extends Application {
 
@@ -331,12 +330,7 @@ public final class FocusFlowApp extends Application {
     private void completeSelectedObjective() {
 
         closeSelectedObjective(
-                "Finalizar objetivo",
-                "Finalizar",
-                "O objetivo será marcado como concluído, "
-                        + "sairá da lista ativa e seu progresso "
-                        + "será preservado.",
-                "Finalizar",
+                ObjectiveLifecycleDialogs::confirmCompletion,
                 objectiveManager::completeObjective,
                 "Objetivo finalizado: "
         );
@@ -345,21 +339,23 @@ public final class FocusFlowApp extends Application {
     private void markSelectedObjectiveNotFinished() {
 
         closeSelectedObjective(
-                "Objetivo não finalizado",
-                "Marcar como não finalizado",
-                "O objetivo sairá da lista ativa, mas ficará "
-                        + "registrado como não finalizado.",
-                "Marcar",
+                ObjectiveLifecycleDialogs::confirmNotFinished,
                 objectiveManager::markObjectiveNotFinished,
                 "Objetivo marcado como não finalizado: "
         );
     }
 
+    private void removeSelectedObjective() {
+
+        closeSelectedObjective(
+                ObjectiveLifecycleDialogs::confirmDiscard,
+                objectiveManager::discardObjective,
+                "Objetivo removido: "
+        );
+    }
+
     private void closeSelectedObjective(
-            String title,
-            String headerAction,
-            String content,
-            String confirmationButtonText,
+            Predicate<Objective> confirmation,
             Consumer<UUID> closeAction,
             String successMessagePrefix
     ) {
@@ -380,49 +376,7 @@ public final class FocusFlowApp extends Application {
         Objective objective =
                 selected.orElseThrow();
 
-        Alert confirmation =
-                new Alert(
-                        Alert.AlertType.CONFIRMATION
-                );
-
-        confirmation.setTitle(
-                title
-        );
-
-        confirmation.setHeaderText(
-                headerAction
-                        + " \""
-                        + objective.getName()
-                        + "\"?"
-        );
-
-        confirmation.setContentText(
-                content
-                        + "\n\nProgresso atual: "
-                        + objective.getProgressPercentage()
-                        + "%."
-        );
-
-        ButtonType confirmationButton =
-                new ButtonType(
-                        confirmationButtonText
-                );
-
-        confirmation
-                .getButtonTypes()
-                .setAll(
-                        confirmationButton,
-                        ButtonType.CANCEL
-                );
-
-        Optional<ButtonType> result =
-                confirmation.showAndWait();
-
-        if (
-                result.isEmpty()
-                        || result.get()
-                        != confirmationButton
-        ) {
+        if (!confirmation.test(objective)) {
 
             return;
         }
@@ -441,97 +395,6 @@ public final class FocusFlowApp extends Application {
 
                 feedbackLabel.setText(
                         successMessagePrefix
-                                + objective.getName()
-                );
-            }
-
-        } catch (
-                IllegalArgumentException
-                        | IllegalStateException exception
-        ) {
-
-            feedbackLabel.setText(
-                    exception.getMessage()
-            );
-        }
-    }
-
-    private void removeSelectedObjective() {
-
-        Optional<Objective> selected =
-                objectiveManager
-                        .getSelectedObjective();
-
-        if (selected.isEmpty()) {
-
-            feedbackLabel.setText(
-                    "Selecione um objetivo primeiro."
-            );
-
-            return;
-        }
-
-        Objective objective =
-                selected.orElseThrow();
-
-        Alert confirmation =
-                new Alert(
-                        Alert.AlertType.CONFIRMATION
-                );
-
-        confirmation.setTitle(
-                "Remover objetivo"
-        );
-
-        confirmation.setHeaderText(
-                "Remover \""
-                        + objective.getName()
-                        + "\"?"
-        );
-
-        confirmation.setContentText(
-                "O objetivo sairá da lista ativa e ficará "
-                        + "marcado como descartado."
-        );
-
-        ButtonType removeButton =
-                new ButtonType(
-                        "Remover"
-                );
-
-        confirmation
-                .getButtonTypes()
-                .setAll(
-                        removeButton,
-                        ButtonType.CANCEL
-                );
-
-        Optional<ButtonType> result =
-                confirmation.showAndWait();
-
-        if (
-                result.isEmpty()
-                        || result.get()
-                        != removeButton
-        ) {
-
-            return;
-        }
-
-        try {
-
-            objectiveManager.discardObjective(
-                    objective.getId()
-            );
-
-            refreshObjectiveSelector();
-            bindClockToSelectedObjective();
-            refreshView();
-
-            if (persistState()) {
-
-                feedbackLabel.setText(
-                        "Objetivo removido: "
                                 + objective.getName()
                 );
             }
