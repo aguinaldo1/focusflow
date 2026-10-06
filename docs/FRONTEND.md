@@ -546,3 +546,22 @@ ObjectiveRestorer
 Objective
     ↓
 ObjectiveManager
+
+---
+
+# BLOCO 18F.1 — Armazenamento local da aplicação
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi criado o `FocusFlowStorage`, responsável por coordenar a persistência local da aplicação.
+
+Fluxo:
+
+```text
+ObjectiveManager
+      ↕
+FocusFlowStorage
+      ↕
+SQLite

@@ -1,5 +1,7 @@
 package io.github.aguinaldo1.focusflow.persistence;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,6 +11,7 @@ import java.util.Objects;
 
 public final class DatabaseManager {
 
+    private final Path databasePath;
     private final String connectionUrl;
 
     public DatabaseManager(
@@ -20,9 +23,14 @@ public final class DatabaseManager {
                 "databasePath"
         );
 
+        this.databasePath =
+                databasePath
+                        .toAbsolutePath()
+                        .normalize();
+
         this.connectionUrl =
                 "jdbc:sqlite:"
-                        + databasePath.toAbsolutePath();
+                        + this.databasePath;
     }
 
     public Connection openConnection()
@@ -35,6 +43,8 @@ public final class DatabaseManager {
 
     public void initialize()
             throws SQLException {
+
+        createDatabaseDirectory();
 
         try (
                 Connection connection =
@@ -59,6 +69,31 @@ public final class DatabaseManager {
                         remaining_seconds INTEGER NOT NULL
                     )
                     """
+            );
+        }
+    }
+
+    private void createDatabaseDirectory()
+            throws SQLException {
+
+        Path parent =
+                databasePath.getParent();
+
+        if (parent == null) {
+            return;
+        }
+
+        try {
+
+            Files.createDirectories(
+                    parent
+            );
+
+        } catch (IOException exception) {
+
+            throw new SQLException(
+                    "Could not create database directory.",
+                    exception
             );
         }
     }
