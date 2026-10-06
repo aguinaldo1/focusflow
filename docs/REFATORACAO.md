@@ -218,3 +218,25 @@ O `FocusFlowApp` continua responsável por executar as ações de domínio após
 ## Resultado
 
 Os diálogos de ciclo de vida foram isolados da classe principal, reduzindo responsabilidade visual e duplicação no `FocusFlowApp`.
+
+---
+
+# Encerramento do BLOCO 19K
+
+**Status:** ✅ Concluído
+
+A refatoração da interface foi encerrada após a separação dos principais componentes visuais.
+
+Foram extraídos:
+
+- `ProgressDonut`;
+- `PomodoroPanel`;
+- `ObjectivePanel`;
+- `PomodoroControls`;
+- `ObjectiveLifecycleDialogs`.
+
+O `FocusFlowApp` permanece como ponto de composição e orquestração da aplicação, coordenando domínio, timer, persistência e integração desktop.
+
+Uma futura extração de um controlador de aplicação poderá ser avaliada após o MVP, caso seja necessário aumentar a separação entre JavaFX e lógica de aplicação.
+
+A suíte permaneceu com 78 testes passando durante toda a refatoração.
