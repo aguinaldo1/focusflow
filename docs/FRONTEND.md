@@ -357,3 +357,34 @@ ACTIVE
 COMPLETED
 NOT_FINISHED
 DISCARDED
+
+---
+
+# BLOCO 17B — Gerenciamento de objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi criado o `ObjectiveManager`, responsável por coordenar os objetivos do FocusFlow.
+
+Principais regras:
+
+- máximo de 5 objetivos ativos;
+- primeiro objetivo criado é selecionado automaticamente;
+- cada objetivo mantém seu próprio `PomodoroTimer`;
+- ao trocar de objetivo, o anterior é pausado se estiver em execução;
+- o novo objetivo não inicia automaticamente;
+- tempo e ciclos são preservados entre trocas;
+- objetivos encerrados permanecem disponíveis para o futuro histórico;
+- um objetivo encerrado deixa de ocupar uma das 5 vagas ativas.
+
+## Validação
+
+```text
+ObjectiveManagerTest: 7 testes
+
+Tests run: 43
+Failures: 0
+Errors: 0
+BUILD SUCCESS
