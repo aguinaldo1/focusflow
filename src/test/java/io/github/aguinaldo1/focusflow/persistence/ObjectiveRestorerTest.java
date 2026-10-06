@@ -151,4 +151,54 @@ class ObjectiveRestorerTest {
                         .completedFocusCycles()
         );
     }
+@Test
+void shouldRestoreRunningActiveObjectiveAsPaused() {
+
+    PersistedObjective persisted =
+            new PersistedObjective(
+                    UUID.randomUUID(),
+                    "Curso Java Guanabara",
+                    "Continuar estudos de Java.",
+                    ObjectiveStatus.ACTIVE,
+                    Instant.parse(
+                            "2026-10-05T20:00:00Z"
+                    ),
+                    null,
+                    PomodoroPhase.FOCUS,
+                    PomodoroStatus.RUNNING,
+                    3,
+                    1122
+            );
+
+    Objective restored =
+            new ObjectiveRestorer()
+                    .restore(
+                            persisted
+                    );
+
+    assertEquals(
+            PomodoroStatus.PAUSED,
+            restored
+                    .getTimer()
+                    .snapshot()
+                    .status()
+    );
+
+    assertEquals(
+            1122,
+            restored
+                    .getTimer()
+                    .snapshot()
+                    .remainingTime()
+                    .toSeconds()
+    );
+
+    assertEquals(
+            3,
+            restored
+                    .getTimer()
+                    .snapshot()
+                    .completedFocusCycles()
+    );
+}
 }

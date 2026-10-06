@@ -1,8 +1,10 @@
 package io.github.aguinaldo1.focusflow.persistence;
 
 import io.github.aguinaldo1.focusflow.objective.Objective;
+import io.github.aguinaldo1.focusflow.objective.ObjectiveStatus;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroConfig;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSession;
+import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroTimer;
 
 import java.time.Duration;
@@ -19,11 +21,16 @@ public final class ObjectiveRestorer {
                 "persisted"
         );
 
+        PomodoroStatus recoveredStatus =
+                determineRecoveredStatus(
+                        persisted
+                );
+
         PomodoroSession session =
                 PomodoroSession.restore(
                         PomodoroConfig.defaults(),
                         persisted.pomodoroPhase(),
-                        persisted.pomodoroStatus(),
+                        recoveredStatus,
                         persisted.completedFocusCycles()
                 );
 
@@ -44,5 +51,22 @@ public final class ObjectiveRestorer {
                 persisted.closedAt(),
                 timer
         );
+    }
+
+    private PomodoroStatus determineRecoveredStatus(
+            PersistedObjective persisted
+    ) {
+
+        if (
+                persisted.status()
+                        == ObjectiveStatus.ACTIVE
+                        && persisted.pomodoroStatus()
+                        == PomodoroStatus.RUNNING
+        ) {
+
+            return PomodoroStatus.PAUSED;
+        }
+
+        return persisted.pomodoroStatus();
     }
 }

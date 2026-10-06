@@ -506,3 +506,20 @@ ObjectiveRestorer
 Objective
     ↓
 PomodoroTimer restaurado
+
+---
+
+# BLOCO 18D — Política segura de recuperação
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi definida uma política de recuperação para objetivos que estavam em execução quando o FocusFlow foi encerrado.
+
+Regra:
+
+```text
+ACTIVE + RUNNING
+        ↓ reabertura
+ACTIVE + PAUSED
