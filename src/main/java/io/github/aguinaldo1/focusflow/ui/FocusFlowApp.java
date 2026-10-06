@@ -50,22 +50,48 @@ public final class FocusFlowApp extends Application {
                 new PomodoroClock(timer);
 
         Label titleLabel =
-                new Label("FocusFlow");
+                new Label("FOCUSFLOW");
+
+        titleLabel.setStyle(
+                "-fx-font-size: 13px;"
+                        + "-fx-font-weight: bold;"
+        );
 
         phaseLabel =
                 new Label();
 
+        phaseLabel.setStyle(
+                "-fx-font-size: 12px;"
+        );
+
         timeLabel =
                 new Label();
+
+        timeLabel.setStyle(
+                "-fx-font-size: 42px;"
+                        + "-fx-font-weight: bold;"
+        );
 
         statusLabel =
                 new Label();
 
+        statusLabel.setStyle(
+                "-fx-font-size: 11px;"
+        );
+
         cyclesLabel =
                 new Label();
 
+        cyclesLabel.setStyle(
+                "-fx-font-size: 11px;"
+        );
+
         feedbackLabel =
                 new Label();
+
+        feedbackLabel.setStyle(
+                "-fx-font-size: 10px;"
+        );
 
         startButton =
                 new Button("Iniciar");
@@ -108,7 +134,7 @@ public final class FocusFlowApp extends Application {
         );
 
         HBox controls = new HBox(
-                10,
+                6,
                 startButton,
                 pauseButton,
                 resumeButton,
@@ -118,7 +144,7 @@ public final class FocusFlowApp extends Application {
         controls.setAlignment(Pos.CENTER);
 
         VBox root = new VBox(
-                12,
+                6,
                 titleLabel,
                 phaseLabel,
                 timeLabel,
@@ -129,22 +155,28 @@ public final class FocusFlowApp extends Application {
         );
 
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(24));
+        root.setPadding(
+                new Insets(14)
+        );
 
         Scene scene = new Scene(
                 root,
-                520,
-                300
+                390,
+                230
         );
 
         refreshView();
-
         startUiRefresh();
-
         clock.start();
 
         stage.setTitle("FocusFlow");
+
+        stage.setAlwaysOnTop(true);
+
+        stage.setResizable(false);
+
         stage.setScene(scene);
+
         stage.show();
     }
 
@@ -209,7 +241,7 @@ public final class FocusFlowApp extends Application {
         );
 
         cyclesLabel.setText(
-                "Ciclos concluídos: "
+                "Ciclos: "
                         + snapshot.completedFocusCycles()
         );
 

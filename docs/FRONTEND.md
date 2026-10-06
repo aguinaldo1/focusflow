@@ -184,3 +184,34 @@ Responsabilidades:
 PomodoroClock → passagem real do tempo
 PomodoroTimer → estado e tempo restante
 Timeline      → atualização visual
+
+---
+
+# BLOCO 14 — Widget desktop compacto
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A interface foi ajustada para funcionar como um widget desktop compacto.
+
+Principais mudanças:
+
+- janela reduzida para `390x230`;
+- janela não redimensionável;
+- `always-on-top`;
+- cronômetro com maior destaque visual;
+- espaçamentos reduzidos;
+- controles preservados.
+
+## Validação
+
+Foram validados manualmente:
+
+```text
+Iniciar
+Pausar
+Continuar
+Resetar
+Cronômetro em tempo real
+Always-on-top
