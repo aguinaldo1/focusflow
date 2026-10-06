@@ -627,3 +627,37 @@ PersistedObjective
 ObjectiveRestorer
     ↓
 Objective
+
+---
+
+# BLOCO 19C/19D — Cadastro e seleção de objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A interface passou a permitir:
+
+- cadastrar até 5 objetivos ativos;
+- escolher complexidade Fácil, Médio ou Difícil;
+- aplicar automaticamente 2, 4 ou 6 ciclos planejados;
+- selecionar qualquer objetivo ativo por uma lista suspensa;
+- utilizar um Pomodoro independente para cada objetivo.
+
+Ao trocar de objetivo, um timer em execução é pausado automaticamente e seu estado é preservado.
+
+O título visual `FOCUSFLOW` foi removido da parte superior da interface.
+
+## Validação
+
+Foram cadastrados múltiplos objetivos e realizada a troca pela lista suspensa.
+
+Foi validado:
+
+```text
+Curso Java → RUNNING
+troca para Kubernetes
+Curso Java → PAUSED
+
+retorno para Curso Java
+tempo restante preservado
