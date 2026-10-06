@@ -14,6 +14,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -93,6 +98,17 @@ public final class FocusFlowApp extends Application {
                 "-fx-font-size: 10px;"
         );
 
+        Label shortcutsLabel =
+        new Label(
+                "Ctrl+I iniciar  •  Ctrl+P pausar  •  "
+                        + "Ctrl+C continuar  •  Ctrl+R resetar"
+        );
+
+        shortcutsLabel.setStyle(
+                "-fx-font-size: 9px;"
+                        + "-fx-opacity: 0.65;"
+        );
+
         startButton =
                 new Button("Iniciar");
 
@@ -151,7 +167,8 @@ public final class FocusFlowApp extends Application {
                 statusLabel,
                 cyclesLabel,
                 controls,
-                feedbackLabel
+                feedbackLabel,
+                shortcutsLabel
         );
 
         root.setAlignment(Pos.CENTER);
@@ -162,23 +179,72 @@ public final class FocusFlowApp extends Application {
         Scene scene = new Scene(
                 root,
                 390,
-                230
+                245
         );
+
+        configureKeyboardShortcuts(scene);
 
         refreshView();
         startUiRefresh();
         clock.start();
 
         stage.setTitle("FocusFlow");
-
         stage.setAlwaysOnTop(true);
-
         stage.setResizable(false);
-
         stage.setScene(scene);
-
         stage.show();
     }
+
+    private void configureKeyboardShortcuts(
+        Scene scene
+) {
+
+    scene.getAccelerators().put(
+            new KeyCodeCombination(
+                    KeyCode.I,
+                    KeyCombination.CONTROL_DOWN
+            ),
+            () -> executeAction(
+                    timer::start,
+                    "Intervalo iniciado."
+            )
+    );
+
+    scene.getAccelerators().put(
+            new KeyCodeCombination(
+                    KeyCode.P,
+                    KeyCombination.CONTROL_DOWN
+            ),
+            () -> executeAction(
+                    timer::pause,
+                    "Intervalo pausado."
+            )
+    );
+
+    scene.getAccelerators().put(
+            new KeyCodeCombination(
+                    KeyCode.C,
+                    KeyCombination.CONTROL_DOWN
+            ),
+            () -> executeAction(
+                    timer::resume,
+                    "Intervalo retomado."
+            )
+    );
+
+    scene.getAccelerators().put(
+            new KeyCodeCombination(
+                    KeyCode.R,
+                    KeyCombination.CONTROL_DOWN
+            ),
+            () -> executeAction(
+                    timer::reset,
+                    "Pomodoro reiniciado."
+            )
+    );
+}
+
+
 
     private void startUiRefresh() {
 

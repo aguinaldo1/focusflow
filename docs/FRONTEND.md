@@ -1,4 +1,4 @@
-# FocusFlow — Desenvolvimento do Front-end
+/# FocusFlow — Desenvolvimento do Front-end
 
 ## Objetivo
 
@@ -215,3 +215,19 @@ Continuar
 Resetar
 Cronômetro em tempo real
 Always-on-top
+
+---
+
+# BLOCO 15 — Atalhos de teclado
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foram adicionados atalhos locais da aplicação utilizando accelerators do JavaFX:
+
+```text
+Ctrl + I → Iniciar
+Ctrl + P → Pausar
+Ctrl + C → Continuar
+Ctrl + R → Resetar
