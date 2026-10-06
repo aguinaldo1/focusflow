@@ -201,4 +201,49 @@ void shouldRestoreRunningActiveObjectiveAsPaused() {
                     .completedFocusCycles()
     );
 }
+@Test
+void shouldRestoreComplexityAndAdjustedPlannedCycles() {
+
+    PersistedObjective persisted =
+            new PersistedObjective(
+                    UUID.randomUUID(),
+                    "Kubernetes avançado",
+                    "",
+                    ObjectiveStatus.ACTIVE,
+                    Instant.parse(
+                            "2026-10-06T10:00:00Z"
+                    ),
+                    null,
+                    io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity.HARD,
+                    7,
+                    PomodoroPhase.FOCUS,
+                    PomodoroStatus.PAUSED,
+                    2,
+                    900
+            );
+
+    Objective restored =
+            new ObjectiveRestorer()
+                    .restore(
+                            persisted
+                    );
+
+    assertEquals(
+            io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity.HARD,
+            restored.getComplexity()
+    );
+
+    assertEquals(
+            7,
+            restored.getPlannedFocusCycles()
+    );
+
+    assertEquals(
+            2,
+            restored
+                    .getTimer()
+                    .snapshot()
+                    .completedFocusCycles()
+    );
+}
 }

@@ -49,6 +49,8 @@ public final class ObjectiveRestorer {
                 persisted.status(),
                 persisted.createdAt(),
                 persisted.closedAt(),
+                persisted.complexity(),
+                persisted.plannedFocusCycles(),
                 timer
         );
     }

@@ -599,3 +599,31 @@ Bancos anteriores são atualizados automaticamente com:
 ```text
 complexity = MEDIUM
 planned_focus_cycles = 4
+
+---
+
+# BLOCO 19B.2 — Persistência do planejamento
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A persistência dos objetivos passou a armazenar também:
+
+- `complexity`;
+- `planned_focus_cycles`.
+
+O `ObjectiveRestorer` recupera esses valores ao reconstruir o objetivo.
+
+## Fluxo
+
+```text
+Objective
+    ↓
+SQLite
+    ↓
+PersistedObjective
+    ↓
+ObjectiveRestorer
+    ↓
+Objective

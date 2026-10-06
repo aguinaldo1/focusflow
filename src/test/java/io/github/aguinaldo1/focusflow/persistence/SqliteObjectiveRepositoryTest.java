@@ -260,5 +260,37 @@ void shouldRestoreObjectiveAfterReadingFromDatabase()
                     .status()
     );
 }
+@Test
+void shouldPersistComplexityAndAdjustedPlannedCycles()
+        throws Exception {
+
+    Objective objective =
+            new Objective(
+                    "Kubernetes avançado",
+                    "",
+                    io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity.HARD
+            );
+
+    objective.increasePlannedFocusCycles();
+
+    repository.save(
+            objective
+    );
+
+    PersistedObjective persisted =
+            repository
+                    .findAll()
+                    .get(0);
+
+    assertEquals(
+            io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity.HARD,
+            persisted.complexity()
+    );
+
+    assertEquals(
+            7,
+            persisted.plannedFocusCycles()
+    );
+}
 
 }

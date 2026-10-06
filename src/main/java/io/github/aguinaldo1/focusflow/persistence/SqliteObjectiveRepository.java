@@ -1,6 +1,7 @@
 package io.github.aguinaldo1.focusflow.persistence;
 
 import io.github.aguinaldo1.focusflow.objective.Objective;
+import io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity;
 import io.github.aguinaldo1.focusflow.objective.ObjectiveStatus;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroPhase;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
@@ -55,18 +56,22 @@ public final class SqliteObjectiveRepository {
                     status,
                     created_at,
                     closed_at,
+                    complexity,
+                    planned_focus_cycles,
                     pomodoro_phase,
                     pomodoro_status,
                     completed_focus_cycles,
                     remaining_seconds
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     name = excluded.name,
                     description = excluded.description,
                     status = excluded.status,
                     created_at = excluded.created_at,
                     closed_at = excluded.closed_at,
+                    complexity = excluded.complexity,
+                    planned_focus_cycles = excluded.planned_focus_cycles,
                     pomodoro_phase = excluded.pomodoro_phase,
                     pomodoro_status = excluded.pomodoro_status,
                     completed_focus_cycles =
@@ -135,26 +140,39 @@ public final class SqliteObjectiveRepository {
 
             statement.setString(
                     7,
+                    objective
+                            .getComplexity()
+                            .name()
+            );
+
+            statement.setInt(
+                    8,
+                    objective
+                            .getPlannedFocusCycles()
+            );
+
+            statement.setString(
+                    9,
                     snapshot
                             .phase()
                             .name()
             );
 
             statement.setString(
-                    8,
+                    10,
                     snapshot
                             .status()
                             .name()
             );
 
             statement.setInt(
-                    9,
+                    11,
                     snapshot
                             .completedFocusCycles()
             );
 
             statement.setLong(
-                    10,
+                    12,
                     snapshot
                             .remainingTime()
                             .toSeconds()
@@ -176,6 +194,8 @@ public final class SqliteObjectiveRepository {
                     status,
                     created_at,
                     closed_at,
+                    complexity,
+                    planned_focus_cycles,
                     pomodoro_phase,
                     pomodoro_status,
                     completed_focus_cycles,
@@ -203,7 +223,7 @@ public final class SqliteObjectiveRepository {
             while (resultSet.next()) {
 
                 objectives.add(
-                        mapObjective(
+                        map(
                                 resultSet
                         )
                 );
@@ -215,21 +235,14 @@ public final class SqliteObjectiveRepository {
         );
     }
 
-    private PersistedObjective mapObjective(
+    private PersistedObjective map(
             ResultSet resultSet
     ) throws SQLException {
 
-        String closedAtValue =
+        String closedAt =
                 resultSet.getString(
                         "closed_at"
                 );
-
-        Instant closedAt =
-                closedAtValue == null
-                        ? null
-                        : Instant.parse(
-                                closedAtValue
-                        );
 
         return new PersistedObjective(
                 UUID.fromString(
@@ -253,7 +266,19 @@ public final class SqliteObjectiveRepository {
                                 "created_at"
                         )
                 ),
-                closedAt,
+                closedAt == null
+                        ? null
+                        : Instant.parse(
+                                closedAt
+                        ),
+                ObjectiveComplexity.valueOf(
+                        resultSet.getString(
+                                "complexity"
+                        )
+                ),
+                resultSet.getInt(
+                        "planned_focus_cycles"
+                ),
                 PomodoroPhase.valueOf(
                         resultSet.getString(
                                 "pomodoro_phase"
