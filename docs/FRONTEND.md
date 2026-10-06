@@ -580,3 +580,22 @@ Objetivos agora possuem nível de complexidade e quantidade planejada de ciclos.
 EASY   → 2 ciclos
 MEDIUM → 4 ciclos
 HARD   → 6 ciclos
+
+---
+
+# BLOCO 19B.1 — Evolução do schema SQLite
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A tabela `objectives` passou a suportar:
+
+- `complexity`;
+- `planned_focus_cycles`.
+
+Bancos anteriores são atualizados automaticamente com:
+
+```text
+complexity = MEDIUM
+planned_focus_cycles = 4
