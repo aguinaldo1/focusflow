@@ -179,4 +179,169 @@ class ObjectiveTest {
                 objective::discard
         );
     }
+	@Test
+void shouldCreateEasyObjectiveWithTwoPlannedCycles() {
+
+    Objective objective =
+            new Objective(
+                    "Leitura rápida",
+                    "",
+                    ObjectiveComplexity.EASY
+            );
+
+    assertEquals(
+            ObjectiveComplexity.EASY,
+            objective.getComplexity()
+    );
+
+    assertEquals(
+            2,
+            objective.getPlannedFocusCycles()
+    );
+}
+
+@Test
+void shouldCreateMediumObjectiveWithFourPlannedCycles() {
+
+    Objective objective =
+            new Objective(
+                    "Curso Java",
+                    "",
+                    ObjectiveComplexity.MEDIUM
+            );
+
+    assertEquals(
+            4,
+            objective.getPlannedFocusCycles()
+    );
+}
+
+@Test
+void shouldCreateHardObjectiveWithSixPlannedCycles() {
+
+    Objective objective =
+            new Objective(
+                    "Kubernetes avançado",
+                    "",
+                    ObjectiveComplexity.HARD
+            );
+
+    assertEquals(
+            6,
+            objective.getPlannedFocusCycles()
+    );
+}
+
+@Test
+void shouldIncreaseAndDecreasePlannedFocusCycles() {
+
+    Objective objective =
+            new Objective(
+                    "Curso Java",
+                    "",
+                    ObjectiveComplexity.MEDIUM
+            );
+
+    objective.increasePlannedFocusCycles();
+
+    assertEquals(
+            5,
+            objective.getPlannedFocusCycles()
+    );
+
+    objective.decreasePlannedFocusCycles();
+
+    assertEquals(
+            4,
+            objective.getPlannedFocusCycles()
+    );
+}
+
+@Test
+void shouldNotReducePlannedCyclesBelowCompletedCycles() {
+
+    Objective objective =
+            new Objective(
+                    "Curso Java",
+                    "",
+                    ObjectiveComplexity.MEDIUM
+            );
+
+    objective
+            .getTimer()
+            .start();
+
+    objective
+            .getTimer()
+            .elapse(
+                    java.time.Duration.ofMinutes(
+                            25
+                    )
+            );
+
+    objective
+            .getTimer()
+            .start();
+
+    objective
+            .getTimer()
+            .elapse(
+                    java.time.Duration.ofMinutes(
+                            5
+                    )
+            );
+
+    objective
+            .getTimer()
+            .start();
+
+    objective
+            .getTimer()
+            .elapse(
+                    java.time.Duration.ofMinutes(
+                            25
+                    )
+            );
+
+    objective.decreasePlannedFocusCycles();
+    objective.decreasePlannedFocusCycles();
+
+    assertEquals(
+            2,
+            objective.getPlannedFocusCycles()
+    );
+
+    assertThrows(
+            IllegalStateException.class,
+            objective::decreasePlannedFocusCycles
+    );
+}
+
+@Test
+void shouldCalculateProgressPercentageFromCompletedCycles() {
+
+    Objective objective =
+            new Objective(
+                    "Curso Java",
+                    "",
+                    ObjectiveComplexity.MEDIUM
+            );
+
+    objective
+            .getTimer()
+            .start();
+
+    objective
+            .getTimer()
+            .elapse(
+                    java.time.Duration.ofMinutes(
+                            25
+                    )
+            );
+
+    assertEquals(
+            25,
+            objective.getProgressPercentage()
+    );
+}
 }

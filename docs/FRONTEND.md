@@ -565,3 +565,18 @@ ObjectiveManager
 FocusFlowStorage
       ↕
 SQLite
+
+---
+
+# BLOCO 19A — Complexidade e planejamento de ciclos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Objetivos agora possuem nível de complexidade e quantidade planejada de ciclos.
+
+```text
+EASY   → 2 ciclos
+MEDIUM → 4 ciclos
+HARD   → 6 ciclos

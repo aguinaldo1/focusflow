@@ -16,13 +16,28 @@ public final class Objective {
     private final String description;
     private final Instant createdAt;
     private final PomodoroTimer timer;
+    private final ObjectiveComplexity complexity;
 
     private ObjectiveStatus status;
     private Instant closedAt;
+    private int plannedFocusCycles;
 
     public Objective(
             String name,
             String description
+    ) {
+
+        this(
+                name,
+                description,
+                ObjectiveComplexity.MEDIUM
+        );
+    }
+
+    public Objective(
+            String name,
+            String description,
+            ObjectiveComplexity complexity
     ) {
 
         this(
@@ -34,7 +49,11 @@ public final class Objective {
                 null,
                 new PomodoroTimer(
                         new PomodoroSession()
-                )
+                ),
+                complexity,
+                requireComplexity(
+                        complexity
+                ).suggestedFocusCycles()
         );
     }
 
@@ -45,7 +64,9 @@ public final class Objective {
             ObjectiveStatus status,
             Instant createdAt,
             Instant closedAt,
-            PomodoroTimer timer
+            PomodoroTimer timer,
+            ObjectiveComplexity complexity,
+            int plannedFocusCycles
     ) {
 
         this.id =
@@ -85,6 +106,21 @@ public final class Objective {
                         "timer"
                 );
 
+        this.complexity =
+                requireComplexity(
+                        complexity
+                );
+
+        if (plannedFocusCycles < 1) {
+
+            throw new IllegalArgumentException(
+                    "Planned focus cycles must be at least 1."
+            );
+        }
+
+        this.plannedFocusCycles =
+                plannedFocusCycles;
+
         validateRestoredState();
     }
 
@@ -98,6 +134,32 @@ public final class Objective {
             PomodoroTimer timer
     ) {
 
+        return restore(
+                id,
+                name,
+                description,
+                status,
+                createdAt,
+                closedAt,
+                ObjectiveComplexity.MEDIUM,
+                ObjectiveComplexity.MEDIUM
+                        .suggestedFocusCycles(),
+                timer
+        );
+    }
+
+    public static Objective restore(
+            UUID id,
+            String name,
+            String description,
+            ObjectiveStatus status,
+            Instant createdAt,
+            Instant closedAt,
+            ObjectiveComplexity complexity,
+            int plannedFocusCycles,
+            PomodoroTimer timer
+    ) {
+
         return new Objective(
                 id,
                 name,
@@ -105,7 +167,9 @@ public final class Objective {
                 status,
                 createdAt,
                 closedAt,
-                timer
+                timer,
+                complexity,
+                plannedFocusCycles
         );
     }
 
@@ -137,8 +201,78 @@ public final class Objective {
         return timer;
     }
 
+    public ObjectiveComplexity getComplexity() {
+        return complexity;
+    }
+
+    public int getPlannedFocusCycles() {
+        return plannedFocusCycles;
+    }
+
+    public int getProgressPercentage() {
+
+        int completedFocusCycles =
+                timer.snapshot()
+                        .completedFocusCycles();
+
+        double progress =
+                completedFocusCycles
+                        / (double) plannedFocusCycles;
+
+        return (int) Math.min(
+                100,
+                Math.round(
+                        progress * 100
+                )
+        );
+    }
+
     public boolean isActive() {
         return status == ObjectiveStatus.ACTIVE;
+    }
+
+    public void increasePlannedFocusCycles() {
+
+        ensureActive();
+
+        if (
+                plannedFocusCycles
+                        == Integer.MAX_VALUE
+        ) {
+
+            throw new IllegalStateException(
+                    "Maximum planned focus cycles reached."
+            );
+        }
+
+        plannedFocusCycles++;
+    }
+
+    public void decreasePlannedFocusCycles() {
+
+        ensureActive();
+
+        int completedFocusCycles =
+                timer.snapshot()
+                        .completedFocusCycles();
+
+        int minimumAllowed =
+                Math.max(
+                        1,
+                        completedFocusCycles
+                );
+
+        if (
+                plannedFocusCycles
+                        <= minimumAllowed
+        ) {
+
+            throw new IllegalStateException(
+                    "Planned focus cycles cannot be reduced further."
+            );
+        }
+
+        plannedFocusCycles--;
     }
 
     public void complete() {
@@ -235,6 +369,16 @@ public final class Objective {
                     "Closed objective cannot have a running Pomodoro."
             );
         }
+    }
+
+    private static ObjectiveComplexity requireComplexity(
+            ObjectiveComplexity complexity
+    ) {
+
+        return Objects.requireNonNull(
+                complexity,
+                "complexity"
+        );
     }
 
     private static String validateName(

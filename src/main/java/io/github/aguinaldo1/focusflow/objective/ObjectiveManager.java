@@ -18,38 +18,56 @@ public final class ObjectiveManager {
 
     private Objective selectedObjective;
 
-    public synchronized Objective addObjective(
-            String name,
-            String description
+	public synchronized Objective addObjective(
+        String name,
+        String description
+) {
+
+    return addObjective(
+            name,
+            description,
+            ObjectiveComplexity.MEDIUM
+    );
+}
+
+public synchronized Objective addObjective(
+        String name,
+        String description,
+        ObjectiveComplexity complexity
+) {
+
+    if (
+            getActiveObjectiveCount()
+                    >= MAX_ACTIVE_OBJECTIVES
     ) {
 
-        if (getActiveObjectiveCount()
-                >= MAX_ACTIVE_OBJECTIVES) {
-
-            throw new IllegalStateException(
-                    "Maximum number of active objectives reached."
-            );
-        }
-
-        Objective objective =
-                new Objective(
-                        name,
-                        description
-                );
-
-        objectives.add(
-                objective
+        throw new IllegalStateException(
+                "Maximum number of active objectives reached."
         );
-
-        if (selectedObjective == null
-                || !selectedObjective.isActive()) {
-
-            selectedObjective =
-                    objective;
-        }
-
-        return objective;
     }
+
+    Objective objective =
+            new Objective(
+                    name,
+                    description,
+                    complexity
+            );
+
+    objectives.add(
+            objective
+    );
+
+    if (
+            selectedObjective == null
+                    || !selectedObjective.isActive()
+    ) {
+
+        selectedObjective =
+                objective;
+    }
+
+    return objective;
+}
 
         public static ObjectiveManager restore(
         List<Objective> restoredObjectives
