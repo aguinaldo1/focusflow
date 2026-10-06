@@ -25,25 +25,88 @@ public final class Objective {
             String description
     ) {
 
-        this.id =
-                UUID.randomUUID();
-
-        this.name =
-                validateName(name);
-
-        this.description =
-                normalizeDescription(description);
-
-        this.createdAt =
-                Instant.now();
-
-        this.status =
-                ObjectiveStatus.ACTIVE;
-
-        this.timer =
+        this(
+                UUID.randomUUID(),
+                name,
+                description,
+                ObjectiveStatus.ACTIVE,
+                Instant.now(),
+                null,
                 new PomodoroTimer(
                         new PomodoroSession()
+                )
+        );
+    }
+
+    private Objective(
+            UUID id,
+            String name,
+            String description,
+            ObjectiveStatus status,
+            Instant createdAt,
+            Instant closedAt,
+            PomodoroTimer timer
+    ) {
+
+        this.id =
+                Objects.requireNonNull(
+                        id,
+                        "id"
                 );
+
+        this.name =
+                validateName(
+                        name
+                );
+
+        this.description =
+                normalizeDescription(
+                        description
+                );
+
+        this.status =
+                Objects.requireNonNull(
+                        status,
+                        "status"
+                );
+
+        this.createdAt =
+                Objects.requireNonNull(
+                        createdAt,
+                        "createdAt"
+                );
+
+        this.closedAt =
+                closedAt;
+
+        this.timer =
+                Objects.requireNonNull(
+                        timer,
+                        "timer"
+                );
+
+        validateRestoredState();
+    }
+
+    public static Objective restore(
+            UUID id,
+            String name,
+            String description,
+            ObjectiveStatus status,
+            Instant createdAt,
+            Instant closedAt,
+            PomodoroTimer timer
+    ) {
+
+        return new Objective(
+                id,
+                name,
+                description,
+                status,
+                createdAt,
+                closedAt,
+                timer
+        );
     }
 
     public UUID getId() {
@@ -79,18 +142,21 @@ public final class Objective {
     }
 
     public void complete() {
+
         closeAs(
                 ObjectiveStatus.COMPLETED
         );
     }
 
     public void markNotFinished() {
+
         closeAs(
                 ObjectiveStatus.NOT_FINISHED
         );
     }
 
     public void discard() {
+
         closeAs(
                 ObjectiveStatus.DISCARDED
         );
@@ -118,8 +184,10 @@ public final class Objective {
         PomodoroSnapshot snapshot =
                 timer.snapshot();
 
-        if (snapshot.status()
-                == PomodoroStatus.RUNNING) {
+        if (
+                snapshot.status()
+                        == PomodoroStatus.RUNNING
+        ) {
 
             timer.pause();
         }
@@ -135,12 +203,48 @@ public final class Objective {
         }
     }
 
+    private void validateRestoredState() {
+
+        if (
+                status == ObjectiveStatus.ACTIVE
+                        && closedAt != null
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Active objective cannot have a closed date."
+            );
+        }
+
+        if (
+                status != ObjectiveStatus.ACTIVE
+                        && closedAt == null
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Closed objective must have a closed date."
+            );
+        }
+
+        if (
+                status != ObjectiveStatus.ACTIVE
+                        && timer.snapshot().status()
+                        == PomodoroStatus.RUNNING
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Closed objective cannot have a running Pomodoro."
+            );
+        }
+    }
+
     private static String validateName(
             String name
     ) {
 
-        if (name == null
-                || name.isBlank()) {
+        if (
+                name == null
+                        || name.isBlank()
+        ) {
 
             throw new IllegalArgumentException(
                     "Objective name is required."

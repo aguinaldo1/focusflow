@@ -194,4 +194,71 @@ class SqliteObjectiveRepositoryTest {
                 persisted.closedAt()
         );
     }
+	@Test
+void shouldRestoreObjectiveAfterReadingFromDatabase()
+        throws Exception {
+
+    Objective original =
+            new Objective(
+                    "Curso Java Guanabara",
+                    "Aprender Java."
+            );
+
+    original
+            .getTimer()
+            .start();
+
+    original
+            .getTimer()
+            .elapse(
+                    Duration.ofSeconds(120)
+            );
+
+    original
+            .getTimer()
+            .pause();
+
+    repository.save(
+            original
+    );
+
+    PersistedObjective persisted =
+            repository
+                    .findAll()
+                    .getFirst();
+
+    Objective restored =
+            new ObjectiveRestorer()
+                    .restore(
+                            persisted
+                    );
+
+    assertEquals(
+            original.getId(),
+            restored.getId()
+    );
+
+    assertEquals(
+            original.getName(),
+            restored.getName()
+    );
+
+    assertEquals(
+            1380,
+            restored
+                    .getTimer()
+                    .snapshot()
+                    .remainingTime()
+                    .toSeconds()
+    );
+
+    assertEquals(
+            PomodoroStatus.PAUSED,
+            restored
+                    .getTimer()
+                    .snapshot()
+                    .status()
+    );
+}
+
 }

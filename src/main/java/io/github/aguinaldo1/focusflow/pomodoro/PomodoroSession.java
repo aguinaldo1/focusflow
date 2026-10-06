@@ -3,7 +3,7 @@ package io.github.aguinaldo1.focusflow.pomodoro;
 import java.time.Duration;
 import java.util.Objects;
 
-public class PomodoroSession {
+public final class PomodoroSession {
 
     private final PomodoroConfig config;
 
@@ -12,57 +12,118 @@ public class PomodoroSession {
     private int completedFocusCycles;
 
     public PomodoroSession() {
-        this(PomodoroConfig.defaults());
+
+        this(
+                PomodoroConfig.defaults()
+        );
     }
 
-    public PomodoroSession(PomodoroConfig config) {
+    public PomodoroSession(
+            PomodoroConfig config
+    ) {
 
-        this.config = Objects.requireNonNull(
+        this(
                 config,
-                "Pomodoro configuration cannot be null."
+                PomodoroPhase.FOCUS,
+                PomodoroStatus.IDLE,
+                0
         );
+    }
 
-        this.phase = PomodoroPhase.FOCUS;
-        this.status = PomodoroStatus.IDLE;
-        this.completedFocusCycles = 0;
+    private PomodoroSession(
+            PomodoroConfig config,
+            PomodoroPhase phase,
+            PomodoroStatus status,
+            int completedFocusCycles
+    ) {
+
+        this.config =
+                Objects.requireNonNull(
+                        config,
+                        "config"
+                );
+
+        this.phase =
+                Objects.requireNonNull(
+                        phase,
+                        "phase"
+                );
+
+        this.status =
+                Objects.requireNonNull(
+                        status,
+                        "status"
+                );
+
+        if (completedFocusCycles < 0) {
+
+            throw new IllegalArgumentException(
+                    "Completed focus cycles cannot be negative."
+            );
+        }
+
+        this.completedFocusCycles =
+                completedFocusCycles;
+    }
+
+    public static PomodoroSession restore(
+            PomodoroConfig config,
+            PomodoroPhase phase,
+            PomodoroStatus status,
+            int completedFocusCycles
+    ) {
+
+        return new PomodoroSession(
+                config,
+                phase,
+                status,
+                completedFocusCycles
+        );
     }
 
     public void start() {
 
         if (status != PomodoroStatus.IDLE) {
+
             throw new IllegalStateException(
-                    "Pomodoro can only start from IDLE state."
+                    "Pomodoro can only start from IDLE."
             );
         }
 
-        status = PomodoroStatus.RUNNING;
+        status =
+                PomodoroStatus.RUNNING;
     }
 
     public void pause() {
 
         if (status != PomodoroStatus.RUNNING) {
+
             throw new IllegalStateException(
-                    "Only a running Pomodoro can be paused."
+                    "Pomodoro can only pause while RUNNING."
             );
         }
 
-        status = PomodoroStatus.PAUSED;
+        status =
+                PomodoroStatus.PAUSED;
     }
 
     public void resume() {
 
         if (status != PomodoroStatus.PAUSED) {
+
             throw new IllegalStateException(
-                    "Only a paused Pomodoro can be resumed."
+                    "Pomodoro can only resume from PAUSED."
             );
         }
 
-        status = PomodoroStatus.RUNNING;
+        status =
+                PomodoroStatus.RUNNING;
     }
 
     public void completeCurrentInterval() {
 
         if (status != PomodoroStatus.RUNNING) {
+
             throw new IllegalStateException(
                     "Only a running interval can be completed."
             );
@@ -72,33 +133,52 @@ public class PomodoroSession {
 
             completedFocusCycles++;
 
-            if (completedFocusCycles
-                    % config.focusCyclesBeforeLongBreak() == 0) {
+            if (
+                    completedFocusCycles
+                            % config.focusCyclesBeforeLongBreak()
+                            == 0
+            ) {
 
-                phase = PomodoroPhase.LONG_BREAK;
+                phase =
+                        PomodoroPhase.LONG_BREAK;
 
             } else {
 
-                phase = PomodoroPhase.SHORT_BREAK;
+                phase =
+                        PomodoroPhase.SHORT_BREAK;
             }
 
         } else {
 
-            phase = PomodoroPhase.FOCUS;
+            phase =
+                    PomodoroPhase.FOCUS;
         }
 
-        status = PomodoroStatus.IDLE;
+        status =
+                PomodoroStatus.IDLE;
     }
 
     public void reset() {
 
-        phase = PomodoroPhase.FOCUS;
-        status = PomodoroStatus.IDLE;
-        completedFocusCycles = 0;
+        phase =
+                PomodoroPhase.FOCUS;
+
+        status =
+                PomodoroStatus.IDLE;
+
+        completedFocusCycles =
+                0;
     }
 
     public Duration getCurrentDuration() {
-        return config.durationFor(phase);
+
+        return config.durationFor(
+                phase
+        );
+    }
+
+    public PomodoroConfig getConfig() {
+        return config;
     }
 
     public PomodoroPhase getPhase() {
@@ -111,9 +191,5 @@ public class PomodoroSession {
 
     public int getCompletedFocusCycles() {
         return completedFocusCycles;
-    }
-
-    public PomodoroConfig getConfig() {
-        return config;
     }
 }

@@ -475,3 +475,34 @@ Tests run: 53
 Failures: 0
 Errors: 0
 BUILD SUCCESS
+
+---
+
+# BLOCO 18C — Restauração de objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+O domínio passou a permitir reconstrução de objetos persistidos.
+
+Foram adicionados mecanismos de restauração para:
+
+- `PomodoroSession`;
+- `PomodoroTimer`;
+- `Objective`.
+
+Também foi criado o `ObjectiveRestorer`, responsável por transformar um `PersistedObjective` em um `Objective` executável.
+
+Fluxo:
+
+```text
+SQLite
+    ↓
+PersistedObjective
+    ↓
+ObjectiveRestorer
+    ↓
+Objective
+    ↓
+PomodoroTimer restaurado
