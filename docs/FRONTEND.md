@@ -329,3 +329,31 @@ PomodoroClock
 SystemAlert
     ↓
 alerta sonoro
+
+---
+
+# BLOCO 17A — Modelo de objetivos
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+Foi criado o modelo `Objective`, que representa um objetivo personalizado do usuário.
+
+Cada objetivo possui:
+
+- identificador único;
+- nome obrigatório;
+- descrição opcional;
+- data de criação;
+- status;
+- data de encerramento;
+- `PomodoroTimer` independente.
+
+Estados disponíveis:
+
+```text
+ACTIVE
+COMPLETED
+NOT_FINISHED
+DISCARDED
