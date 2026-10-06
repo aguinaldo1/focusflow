@@ -710,3 +710,18 @@ O percentual representa:
 
 ```text
 ciclos concluídos / ciclos planejados
+
+---
+
+# BLOCO 19G — Persistência SQLite integrada
+
+**Status:** ✅ Concluído
+
+## Implementação
+
+A interface do FocusFlow passou a utilizar o armazenamento SQLite já existente.
+
+O banco local é criado em:
+
+```text
+~/.focusflow/focusflow.db

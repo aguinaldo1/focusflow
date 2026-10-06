@@ -5,6 +5,7 @@ import io.github.aguinaldo1.focusflow.desktop.SystemTrayIntegration;
 import io.github.aguinaldo1.focusflow.objective.Objective;
 import io.github.aguinaldo1.focusflow.objective.ObjectiveComplexity;
 import io.github.aguinaldo1.focusflow.objective.ObjectiveManager;
+import io.github.aguinaldo1.focusflow.persistence.FocusFlowStorage;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroClock;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroSnapshot;
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
@@ -40,6 +41,8 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.awt.AWTException;
+import java.nio.file.Path;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -47,6 +50,9 @@ import java.util.function.Consumer;
 public final class FocusFlowApp extends Application {
 
     private ObjectiveManager objectiveManager;
+
+    private FocusFlowStorage storage;
+    private boolean storageAvailable;
 
     private PomodoroClock clock;
     private Timeline uiRefreshTimeline;
@@ -87,8 +93,7 @@ public final class FocusFlowApp extends Application {
             Stage stage
     ) {
 
-        objectiveManager =
-                new ObjectiveManager();
+        initializeStorage();
 
         systemAlert =
                 new SystemAlert();
@@ -243,7 +248,18 @@ public final class FocusFlowApp extends Application {
                 scene
         );
 
+        refreshObjectiveSelector();
+        bindClockToSelectedObjective();
         refreshView();
+
+        if (!storageAvailable) {
+
+            feedbackLabel.setText(
+                    "Armazenamento local indisponível. "
+                            + "A sessão atual não será persistida."
+            );
+        }
+
         startUiRefresh();
 
         stage.setTitle(
@@ -267,6 +283,40 @@ public final class FocusFlowApp extends Application {
         );
 
         stage.show();
+    }
+
+    private void initializeStorage() {
+
+        Path databasePath =
+                Path.of(
+                        System.getProperty(
+                                "user.home"
+                        ),
+                        ".focusflow",
+                        "focusflow.db"
+                );
+
+        storage =
+                new FocusFlowStorage(
+                        databasePath
+                );
+
+        try {
+
+            objectiveManager =
+                    storage.load();
+
+            storageAvailable =
+                    true;
+
+        } catch (SQLException exception) {
+
+            objectiveManager =
+                    new ObjectiveManager();
+
+            storageAvailable =
+                    false;
+        }
     }
 
     private void createObjectiveControls() {
@@ -603,10 +653,6 @@ public final class FocusFlowApp extends Application {
                 66
         );
 
-        /*
-         * Eleva a rosca sem alterar a posição
-         * central do cronômetro.
-         */
         progressDonut.setTranslateY(
                 -12
         );
@@ -643,15 +689,18 @@ public final class FocusFlowApp extends Application {
             objectiveNameField.clear();
 
             refreshObjectiveSelector();
-
             bindClockToSelectedObjective();
-
-            feedbackLabel.setText(
-                    "Objetivo adicionado: "
-                            + objective.getName()
-            );
-
             refreshView();
+
+            if (
+                    persistState()
+            ) {
+
+                feedbackLabel.setText(
+                        "Objetivo adicionado: "
+                                + objective.getName()
+                );
+            }
 
         } catch (
                 IllegalArgumentException
@@ -733,15 +782,18 @@ public final class FocusFlowApp extends Application {
             );
 
             refreshObjectiveSelector();
-
             bindClockToSelectedObjective();
-
-            feedbackLabel.setText(
-                    "Objetivo removido: "
-                            + objective.getName()
-            );
-
             refreshView();
+
+            if (
+                    persistState()
+            ) {
+
+                feedbackLabel.setText(
+                        "Objetivo removido: "
+                                + objective.getName()
+                );
+            }
 
         } catch (
                 IllegalArgumentException
@@ -782,13 +834,17 @@ public final class FocusFlowApp extends Application {
             );
 
             bindClockToSelectedObjective();
-
-            feedbackLabel.setText(
-                    "Objetivo selecionado: "
-                            + objective.getName()
-            );
-
             refreshView();
+
+            if (
+                    persistState()
+            ) {
+
+                feedbackLabel.setText(
+                        "Objetivo selecionado: "
+                                + objective.getName()
+                );
+            }
 
         } catch (
                 IllegalArgumentException
@@ -834,14 +890,19 @@ public final class FocusFlowApp extends Application {
                         .decreasePlannedFocusCycles();
             }
 
-            feedbackLabel.setText(
-                    "Planejamento ajustado para "
-                            + objective
-                            .getPlannedFocusCycles()
-                            + " ciclos."
-            );
-
             refreshView();
+
+            if (
+                    persistState()
+            ) {
+
+                feedbackLabel.setText(
+                        "Planejamento ajustado para "
+                                + objective
+                                .getPlannedFocusCycles()
+                                + " ciclos."
+                );
+            }
 
         } catch (IllegalStateException exception) {
 
@@ -902,8 +963,15 @@ public final class FocusFlowApp extends Application {
                         selectedTimer,
                         () ->
                                 Platform.runLater(
-                                        systemAlert
-                                                ::playTimerFinished
+                                        () -> {
+
+                                            systemAlert
+                                                    .playTimerFinished();
+
+                                            persistState();
+
+                                            refreshView();
+                                        }
                                 )
                 );
 
@@ -936,9 +1004,16 @@ public final class FocusFlowApp extends Application {
                             .getTimer()
             );
 
-            feedbackLabel.setText(
-                    successMessage
-            );
+            refreshView();
+
+            if (
+                    persistState()
+            ) {
+
+                feedbackLabel.setText(
+                        successMessage
+                );
+            }
 
         } catch (IllegalStateException exception) {
 
@@ -947,8 +1022,38 @@ public final class FocusFlowApp extends Application {
                             + exception.getMessage()
             );
         }
+    }
 
-        refreshView();
+    private boolean persistState() {
+
+        if (
+                !storageAvailable
+                        || storage == null
+        ) {
+
+            feedbackLabel.setText(
+                    "Armazenamento local indisponível."
+            );
+
+            return false;
+        }
+
+        try {
+
+            storage.save(
+                    objectiveManager
+            );
+
+            return true;
+
+        } catch (SQLException exception) {
+
+            feedbackLabel.setText(
+                    "Não foi possível salvar os dados."
+            );
+
+            return false;
+        }
     }
 
     private void refreshView() {
@@ -1367,6 +1472,27 @@ public final class FocusFlowApp extends Application {
         if (clock != null) {
 
             clock.close();
+        }
+
+        if (
+                storageAvailable
+                        && storage != null
+                        && objectiveManager != null
+        ) {
+
+            try {
+
+                storage.save(
+                        objectiveManager
+                );
+
+            } catch (SQLException exception) {
+
+                System.err.println(
+                        "Não foi possível salvar o estado final do FocusFlow: "
+                                + exception.getMessage()
+                );
+            }
         }
 
         if (systemTrayIntegration != null) {
