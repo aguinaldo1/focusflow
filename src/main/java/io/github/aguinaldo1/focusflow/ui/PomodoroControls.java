@@ -23,6 +23,10 @@ public final class PomodoroControls extends HBox {
 
         super(6);
 
+        getStyleClass().add(
+                "hud-controls"
+        );
+
         Objects.requireNonNull(
                 onStart,
                 "onStart"
@@ -61,6 +65,30 @@ public final class PomodoroControls extends HBox {
         restartButton =
                 new Button(
                         "Reiniciar"
+                );
+
+        startButton
+                .getStyleClass()
+                .add(
+                        "hud-success-button"
+                );
+
+        pauseButton
+                .getStyleClass()
+                .add(
+                        "hud-warning-button"
+                );
+
+        resumeButton
+                .getStyleClass()
+                .add(
+                        "hud-primary-button"
+                );
+
+        restartButton
+                .getStyleClass()
+                .add(
+                        "hud-secondary-button"
                 );
 
         startButton.setOnAction(

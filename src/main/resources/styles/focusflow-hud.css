@@ -339,3 +339,305 @@
     -fx-text-fill: #58788C;
     -fx-font-size: 9px;
 }
+
+
+/* =========================================================
+   Componentes HUD — BLOCO 20A.2
+   ========================================================= */
+
+
+/* ---------- Painel de objetivo ---------- */
+
+.hud-objective-panel {
+    -fx-background-color:
+        linear-gradient(
+            to bottom right,
+            rgba(6, 28, 46, 0.96),
+            rgba(3, 15, 27, 0.97)
+        );
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.42);
+
+    -fx-border-width: 1;
+
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+
+    -fx-padding: 9;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.12),
+            12,
+            0.20,
+            0,
+            2
+        );
+}
+
+
+/* ---------- Painel do Pomodoro ---------- */
+
+.hud-pomodoro-panel {
+    -fx-background-color:
+        radial-gradient(
+            center 50% 50%,
+            radius 80%,
+            rgba(7, 37, 57, 0.96),
+            rgba(3, 14, 25, 0.98)
+        );
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.58);
+
+    -fx-border-width: 1;
+
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+
+    -fx-padding: 6;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.18),
+            15,
+            0.25,
+            0,
+            1
+        );
+}
+
+
+/* ---------- Barra de controles ---------- */
+
+.hud-controls {
+    -fx-background-color:
+        rgba(4, 20, 34, 0.78);
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.20);
+
+    -fx-border-width: 1;
+
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+
+    -fx-padding: 6 8 6 8;
+}
+
+
+/* ---------- Botão principal ---------- */
+
+.button.hud-primary-button {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            #087CA3,
+            #07536F
+        );
+
+    -fx-border-color: #00D9FF;
+    -fx-text-fill: #F0FDFF;
+}
+
+.button.hud-primary-button:hover {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            #0A9FCB,
+            #087093
+        );
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.38),
+            12,
+            0.35,
+            0,
+            0
+        );
+}
+
+
+/* ---------- Ação positiva ---------- */
+
+.button.hud-success-button {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(18, 112, 91, 0.95),
+            rgba(9, 69, 59, 0.98)
+        );
+
+    -fx-border-color: #23E6B1;
+    -fx-text-fill: #D7FFF4;
+}
+
+.button.hud-success-button:hover {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(23, 145, 116, 0.98),
+            rgba(11, 87, 72, 0.98)
+        );
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(35, 230, 177, 0.30),
+            10,
+            0.30,
+            0,
+            0
+        );
+}
+
+
+/* ---------- Atenção ---------- */
+
+.button.hud-warning-button {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(132, 76, 20, 0.96),
+            rgba(82, 45, 10, 0.98)
+        );
+
+    -fx-border-color: #FF8A28;
+    -fx-text-fill: #FFE4C3;
+}
+
+.button.hud-warning-button:hover {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(168, 95, 22, 0.98),
+            rgba(105, 57, 11, 0.98)
+        );
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(255, 138, 40, 0.30),
+            10,
+            0.30,
+            0,
+            0
+        );
+}
+
+
+/* ---------- Ação destrutiva ---------- */
+
+.button.hud-danger-button {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(126, 35, 53, 0.96),
+            rgba(76, 18, 31, 0.98)
+        );
+
+    -fx-border-color: #FF5067;
+    -fx-text-fill: #FFDCE1;
+}
+
+.button.hud-danger-button:hover {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(161, 42, 65, 0.98),
+            rgba(100, 22, 39, 0.98)
+        );
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(255, 80, 103, 0.28),
+            10,
+            0.30,
+            0,
+            0
+        );
+}
+
+
+/* ---------- Ação secundária ---------- */
+
+.button.hud-secondary-button {
+    -fx-background-color:
+        rgba(7, 28, 45, 0.96);
+
+    -fx-border-color:
+        rgba(117, 179, 204, 0.62);
+
+    -fx-text-fill: #B8D6E4;
+}
+
+.button.hud-secondary-button:hover {
+    -fx-border-color: #00D9FF;
+    -fx-text-fill: #EAFBFF;
+}
+
+
+/* ---------- Ajuste de ciclos ---------- */
+
+.button.hud-cycle-button {
+    -fx-min-width: 34;
+    -fx-pref-width: 34;
+
+    -fx-padding: 4 8 4 8;
+
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.54);
+
+    -fx-text-fill: #00D9FF;
+}
+
+
+/* =========================================================
+   Hierarquia visual — BLOCO 20A.2B
+   ========================================================= */
+
+
+/* ---------- Subtítulos internos ---------- */
+
+.hud-section-label {
+    -fx-text-fill: #6F9CB0;
+
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+
+    -fx-padding: 2 0 0 0;
+}
+
+
+/* ---------- Contador de ciclos ---------- */
+
+.hud-cycle-count {
+    -fx-text-fill: #EAFBFF;
+
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+
+/* ---------- Ajustes de espaçamento ---------- */
+
+.hud-objective-panel {
+    -fx-spacing: 6;
+}
+
+.hud-pomodoro-panel {
+    -fx-padding: 8;
+}
+
+.hud-controls {
+    -fx-spacing: 7;
+}

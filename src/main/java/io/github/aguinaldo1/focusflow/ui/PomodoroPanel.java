@@ -36,6 +36,11 @@ public final class PomodoroPanel extends StackPane {
 
     public PomodoroPanel() {
 
+        getStyleClass().addAll(
+                "hud-panel",
+                "hud-pomodoro-panel"
+        );
+
         phaseLabel =
                 new Label("-");
 

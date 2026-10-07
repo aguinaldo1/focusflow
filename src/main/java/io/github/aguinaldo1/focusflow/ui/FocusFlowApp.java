@@ -134,7 +134,7 @@ public final class FocusFlowApp extends Application {
                 new Scene(
                         root,
                         430,
-                        410
+                        520
                 );
 
         var hudStylesheet =
@@ -293,6 +293,12 @@ public final class FocusFlowApp extends Application {
         historyButton =
                 new Button(
                         "Histórico"
+                );
+
+        historyButton
+                .getStyleClass()
+                .add(
+                        "hud-secondary-button"
                 );
 
         historyButton.setOnAction(

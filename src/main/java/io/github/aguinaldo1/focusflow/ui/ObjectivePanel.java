@@ -46,6 +46,11 @@ public final class ObjectivePanel extends VBox {
 
         super(7);
 
+        getStyleClass().addAll(
+                "hud-panel",
+                "hud-objective-panel"
+        );
+
         Objects.requireNonNull(
                 onAddObjective,
                 "onAddObjective"
@@ -103,6 +108,12 @@ public final class ObjectivePanel extends VBox {
         addObjectiveButton =
                 new Button(
                         "Adicionar"
+                );
+
+        addObjectiveButton
+                .getStyleClass()
+                .add(
+                        "hud-primary-button"
                 );
 
         addObjectiveButton.setOnAction(
@@ -174,6 +185,12 @@ public final class ObjectivePanel extends VBox {
                         "Finalizar"
                 );
 
+        completeObjectiveButton
+                .getStyleClass()
+                .add(
+                        "hud-success-button"
+                );
+
         completeObjectiveButton.setDisable(
                 true
         );
@@ -188,6 +205,12 @@ public final class ObjectivePanel extends VBox {
                         "Não finalizado"
                 );
 
+        notFinishedObjectiveButton
+                .getStyleClass()
+                .add(
+                        "hud-warning-button"
+                );
+
         notFinishedObjectiveButton.setDisable(
                 true
         );
@@ -200,6 +223,12 @@ public final class ObjectivePanel extends VBox {
         removeObjectiveButton =
                 new Button(
                         "Remover"
+                );
+
+        removeObjectiveButton
+                .getStyleClass()
+                .add(
+                        "hud-danger-button"
                 );
 
         removeObjectiveButton.setDisable(
@@ -226,9 +255,21 @@ public final class ObjectivePanel extends VBox {
                         "−"
                 );
 
+        decreaseCyclesButton
+                .getStyleClass()
+                .add(
+                        "hud-cycle-button"
+                );
+
         increaseCyclesButton =
                 new Button(
                         "+"
+                );
+
+        increaseCyclesButton
+                .getStyleClass()
+                .add(
+                        "hud-cycle-button"
                 );
 
         plannedCyclesLabel =
@@ -254,6 +295,29 @@ public final class ObjectivePanel extends VBox {
                                 1
                         )
         );
+
+        Label currentObjectiveTitle =
+                new Label(
+                        "OBJETIVO ATUAL"
+                );
+
+        currentObjectiveTitle
+                .getStyleClass()
+                .add(
+                        "hud-section-label"
+                );
+
+        planningLabel
+                .getStyleClass()
+                .add(
+                        "hud-muted"
+                );
+
+        plannedCyclesLabel
+                .getStyleClass()
+                .add(
+                        "hud-cycle-count"
+                );
 
         HBox objectiveInput =
                 new HBox(
@@ -307,6 +371,7 @@ public final class ObjectivePanel extends VBox {
 
         getChildren().addAll(
                 objectiveInput,
+                currentObjectiveTitle,
                 objectiveSelection,
                 objectiveLifecycle,
                 planningLabel,
