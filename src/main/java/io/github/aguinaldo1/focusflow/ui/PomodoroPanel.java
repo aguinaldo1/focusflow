@@ -160,6 +160,9 @@ public final class PomodoroPanel extends StackPane {
                         0
                 );
 
+        timerHudDial
+                .showEmptyState();
+
         updateAppearance(
                 null
         );
@@ -201,6 +204,13 @@ public final class PomodoroPanel extends StackPane {
         progressDonut
                 .setProgressPercentage(
                         progressPercentage
+                );
+
+        timerHudDial
+                .updateSessionProgress(
+                        snapshot.remainingTime(),
+                        snapshot.intervalDuration(),
+                        snapshot.phase()
                 );
 
         updateAppearance(

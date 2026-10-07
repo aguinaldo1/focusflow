@@ -156,7 +156,8 @@ public final class PomodoroTimer {
                 session.getPhase(),
                 session.getStatus(),
                 session.getCompletedFocusCycles(),
-                remainingTime
+                remainingTime,
+                session.getCurrentDuration()
         );
     }
 

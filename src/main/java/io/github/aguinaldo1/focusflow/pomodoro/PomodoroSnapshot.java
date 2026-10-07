@@ -6,6 +6,7 @@ public record PomodoroSnapshot(
         PomodoroPhase phase,
         PomodoroStatus status,
         int completedFocusCycles,
-        Duration remainingTime
+        Duration remainingTime,
+        Duration intervalDuration
 ) {
 }

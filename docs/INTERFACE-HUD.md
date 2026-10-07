@@ -257,3 +257,78 @@ As marcações utilizam a identidade cyan do HUD e permanecem fora da área de l
 ## Resultado
 
 O Timer HUD passou a apresentar referências radiais semelhantes a um instrumento digital, preservando o cronômetro como elemento visual principal.
+
+---
+
+# BLOCO 20B.3 — Progresso temporal da sessão
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Transformar o Timer HUD em um indicador funcional do progresso temporal da sessão atual.
+
+## Alterações
+
+O `PomodoroSnapshot` passou a disponibilizar também a duração total do intervalo através de:
+
+`intervalDuration`
+
+O `PomodoroTimer` fornece essa informação a partir da duração atual mantida pela sessão, evitando duplicação das regras de 25, 5 e 15 minutos na interface.
+
+O `TimerHudDial` passou a calcular o progresso temporal utilizando:
+
+`(duração total - tempo restante) / duração total`
+
+Foi adicionado um arco de progresso ao redor do cronômetro.
+
+### Estados visuais
+
+FOCO:
+
+- arco cyan;
+- crescimento no sentido horário;
+- início no topo do dial.
+
+PAUSA:
+
+- arco verde/cyan.
+
+O `ProgressDonut` continua separado e mantém sua responsabilidade de representar o progresso do objetivo.
+
+## Decisão arquitetural
+
+As durações do Pomodoro permanecem definidas no domínio.
+
+A interface recebe somente o estado necessário através do `PomodoroSnapshot`.
+
+Fluxo:
+
+`PomodoroConfig / PomodoroSession`
+
+↓
+
+`PomodoroTimer`
+
+↓
+
+`PomodoroSnapshot`
+
+↓
+
+`TimerHudDial`
+
+## Validação
+
+- 78 testes automatizados passando;
+- arco temporal renderizado;
+- início no topo do círculo;
+- crescimento no sentido horário;
+- FOCO utilizando cyan;
+- ProgressDonut preservado;
+- cronômetro legível;
+- interface permaneceu visualmente limpa.
+
+## Resultado
+
+O Timer HUD passou a representar visualmente o progresso da sessão atual, transformando o círculo principal em um instrumento funcional da aplicação.
