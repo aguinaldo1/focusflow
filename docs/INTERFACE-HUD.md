@@ -221,3 +221,39 @@ Também será reconfirmada a legibilidade da informação de ciclos concluídos.
 ## Resultado
 
 O cronômetro passou a possuir uma estrutura circular própria de HUD, preparando a base para marcações radiais, progresso temporal e estados visuais mais avançados.
+
+---
+
+# BLOCO 20B.2 — Marcações radiais do Timer HUD
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Adicionar referências visuais radiais ao Timer HUD para reforçar a aparência de instrumento tecnológico sem prejudicar a leitura do cronômetro.
+
+## Alterações
+
+O `TimerHudDial` passou a possuir 24 marcações distribuídas ao redor do círculo.
+
+Foram definidos dois níveis visuais:
+
+- marcações secundárias discretas;
+- quatro marcações principais nos pontos cardeais.
+
+As marcações utilizam a identidade cyan do HUD e permanecem fora da área de leitura do cronômetro.
+
+## Validação
+
+- 78 testes automatizados passando;
+- 24 marcações renderizadas;
+- quatro referências principais perceptíveis;
+- alinhamento correto com o círculo;
+- nenhuma interferência no cronômetro;
+- aparência mais tecnológica;
+- interface permaneceu limpa;
+- painel continua dentro da janela.
+
+## Resultado
+
+O Timer HUD passou a apresentar referências radiais semelhantes a um instrumento digital, preservando o cronômetro como elemento visual principal.
