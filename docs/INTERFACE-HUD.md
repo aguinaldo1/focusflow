@@ -172,3 +172,52 @@ Evitar excesso de textos decorativos e elementos sem função.
 ## Resultado
 
 A interface passou a possuir módulos HUD visualmente separados e semanticamente consistentes, mantendo o FocusFlow compacto e legível.
+
+---
+
+# BLOCO 20B.1 — Estrutura circular do Timer HUD
+
+**Status:** ✅ Estrutura aprovada
+
+## Objetivo
+
+Transformar o cronômetro principal em um elemento circular inspirado em interfaces HUD, mantendo separada a informação de progresso do objetivo.
+
+## Alterações
+
+Foi criado:
+
+`ui/TimerHudDial.java`
+
+O novo componente adiciona:
+
+- anel externo;
+- anel intermediário segmentado;
+- anel interno;
+- brilho cyan discreto;
+- estrutura central para o cronômetro.
+
+O `ProgressDonut` continua representando exclusivamente o progresso do objetivo e permanece separado do Timer HUD.
+
+## Validação
+
+- 78 testes automatizados passando;
+- círculo principal renderizado;
+- cronômetro centralizado;
+- fase FOCO posicionada corretamente;
+- status legível;
+- ProgressDonut preservado;
+- anéis visíveis;
+- brilho discreto;
+- painel continua dentro da janela;
+- Histórico continua visível.
+
+## Validação final pendente
+
+A verificação manual completa das funcionalidades será executada ao final da fase visual para reduzir repetição durante o desenvolvimento.
+
+Também será reconfirmada a legibilidade da informação de ciclos concluídos.
+
+## Resultado
+
+O cronômetro passou a possuir uma estrutura circular própria de HUD, preparando a base para marcações radiais, progresso temporal e estados visuais mais avançados.

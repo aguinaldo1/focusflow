@@ -32,7 +32,9 @@ public final class PomodoroPanel extends StackPane {
     private final Label timeLabel;
     private final Label statusLabel;
     private final Label cyclesLabel;
+
     private final ProgressDonut progressDonut;
+    private final TimerHudDial timerHudDial;
 
     public PomodoroPanel() {
 
@@ -64,10 +66,13 @@ public final class PomodoroPanel extends StackPane {
                 );
 
         cyclesLabel.setStyle(
-                "-fx-font-size: 11px;"
+                "-fx-font-size: 10px;"
                         + "-fx-opacity: 0.90;"
                         + "-fx-text-fill: #A9C8D8;"
         );
+
+        timerHudDial =
+                new TimerHudDial();
 
         progressDonut =
                 new ProgressDonut();
@@ -86,21 +91,27 @@ public final class PomodoroPanel extends StackPane {
         );
 
         getChildren().addAll(
+                timerHudDial,
                 timerInformation,
                 progressDonut
         );
 
         setPrefSize(
                 360,
-                112
+                145
         );
 
         setMinHeight(
-                112
+                145
         );
 
         setMaxWidth(
                 360
+        );
+
+        StackPane.setAlignment(
+                timerHudDial,
+                Pos.CENTER
         );
 
         StackPane.setAlignment(
@@ -116,10 +127,10 @@ public final class PomodoroPanel extends StackPane {
         StackPane.setMargin(
                 progressDonut,
                 new Insets(
-                        3,
+                        4,
                         0,
                         0,
-                        20
+                        16
                 )
         );
 
@@ -235,7 +246,7 @@ public final class PomodoroPanel extends StackPane {
         }
 
         timeLabel.setStyle(
-                "-fx-font-size: 50px;"
+                "-fx-font-size: 46px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: "
                         + timerColor
