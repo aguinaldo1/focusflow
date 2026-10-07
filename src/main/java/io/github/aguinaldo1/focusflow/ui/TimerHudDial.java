@@ -1,6 +1,7 @@
 package io.github.aguinaldo1.focusflow.ui;
 
 import io.github.aguinaldo1.focusflow.pomodoro.PomodoroPhase;
+import io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
@@ -131,12 +132,17 @@ public final class TimerHudDial extends StackPane {
         updateProgressAppearance(
                 null
         );
+
+        updateStateAppearance(
+                null
+        );
     }
 
     public void updateSessionProgress(
             Duration remainingTime,
             Duration intervalDuration,
-            PomodoroPhase phase
+            PomodoroPhase phase,
+            PomodoroStatus status
     ) {
 
         Objects.requireNonNull(
@@ -152,6 +158,11 @@ public final class TimerHudDial extends StackPane {
         Objects.requireNonNull(
                 phase,
                 "phase"
+        );
+
+        Objects.requireNonNull(
+                status,
+                "status"
         );
 
         long totalMillis =
@@ -187,6 +198,10 @@ public final class TimerHudDial extends StackPane {
 
         updateProgressAppearance(
                 phase
+        );
+
+        updateStateAppearance(
+                status
         );
     }
 
@@ -257,6 +272,45 @@ public final class TimerHudDial extends StackPane {
                 .add(
                         "timer-hud-session-progress-inactive"
                 );
+    }
+
+    private void updateStateAppearance(
+            PomodoroStatus status
+    ) {
+
+        getStyleClass().removeAll(
+                "timer-state-running",
+                "timer-state-paused",
+                "timer-state-idle",
+                "timer-state-empty"
+        );
+
+        if (status == null) {
+
+            getStyleClass().add(
+                    "timer-state-empty"
+            );
+
+            return;
+        }
+
+        switch (status) {
+
+            case RUNNING ->
+                    getStyleClass().add(
+                            "timer-state-running"
+                    );
+
+            case PAUSED ->
+                    getStyleClass().add(
+                            "timer-state-paused"
+                    );
+
+            case IDLE ->
+                    getStyleClass().add(
+                            "timer-state-idle"
+                    );
+        }
     }
 
     private static Circle createRing(

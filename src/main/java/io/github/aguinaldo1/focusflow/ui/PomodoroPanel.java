@@ -191,9 +191,9 @@ public final class PomodoroPanel extends StackPane {
         );
 
         statusLabel.setText(
-                snapshot
-                        .status()
-                        .name()
+                statusDisplayName(
+                        snapshot.status()
+                )
         );
 
         cyclesLabel.setText(
@@ -210,7 +210,8 @@ public final class PomodoroPanel extends StackPane {
                 .updateSessionProgress(
                         snapshot.remainingTime(),
                         snapshot.intervalDuration(),
-                        snapshot.phase()
+                        snapshot.phase(),
+                        snapshot.status()
                 );
 
         updateAppearance(
@@ -270,6 +271,23 @@ public final class PomodoroPanel extends StackPane {
                         + phaseColor
                         + ";"
         );
+    }
+
+    private static String statusDisplayName(
+            io.github.aguinaldo1.focusflow.pomodoro.PomodoroStatus status
+    ) {
+
+        return switch (status) {
+
+            case IDLE ->
+                    "PRONTO";
+
+            case RUNNING ->
+                    "EM ANDAMENTO";
+
+            case PAUSED ->
+                    "PAUSADO";
+        };
     }
 
     private static String phaseDisplayName(

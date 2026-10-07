@@ -332,3 +332,75 @@ Fluxo:
 ## Resultado
 
 O Timer HUD passou a representar visualmente o progresso da sessão atual, transformando o círculo principal em um instrumento funcional da aplicação.
+
+---
+
+# BLOCO 20B.4 — Estados visuais do Timer HUD
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Permitir que o estado atual do Pomodoro seja reconhecido visualmente sem depender apenas da leitura do texto.
+
+## Estados
+
+### PRONTO
+
+Representa o estado `IDLE`.
+
+O Timer HUD utiliza aparência mais discreta, indicando que existe uma sessão preparada, mas ainda não iniciada.
+
+### EM ANDAMENTO
+
+Representa o estado `RUNNING`.
+
+O dial utiliza maior luminosidade cyan e destaque nas marcações principais.
+
+### PAUSADO
+
+Representa o estado `PAUSED`.
+
+O Timer HUD passa a utilizar destaque âmbar, diferenciando claramente a interrupção temporária de uma sessão ativa.
+
+## Estados de fase
+
+FOCO mantém a identidade cyan.
+
+Pausas utilizam a identidade verde/cyan definida anteriormente.
+
+## Alterações de apresentação
+
+Os estados internos:
+
+- `IDLE`;
+- `RUNNING`;
+- `PAUSED`;
+
+passaram a ser apresentados ao usuário como:
+
+- `PRONTO`;
+- `EM ANDAMENTO`;
+- `PAUSADO`.
+
+## Validação
+
+- 78 testes automatizados passando;
+- PRONTO renderizado corretamente;
+- EM ANDAMENTO renderizado corretamente;
+- PAUSADO renderizado corretamente;
+- estado RUNNING com maior luminosidade;
+- estado PAUSED identificado em âmbar;
+- estado IDLE visualmente discreto;
+- identidade cyan do FOCO preservada;
+- interface permaneceu limpa.
+
+## Decisão
+
+Animações adicionais foram adiadas.
+
+O Timer HUD já comunica os estados adequadamente e o FocusFlow deve evitar efeitos visuais que possam competir com a própria atividade de foco.
+
+## Resultado
+
+O Timer HUD passou a funcionar como um indicador visual completo da sessão, combinando fase, estado, tempo restante e progresso temporal.

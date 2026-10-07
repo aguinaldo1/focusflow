@@ -786,3 +786,79 @@
     -fx-stroke:
         rgba(119, 151, 170, 0.32);
 }
+/* =========================================================
+   Estados do Timer HUD — BLOCO 20B.4
+   ========================================================= */
+
+
+/* ---------- Em execução ---------- */
+
+.timer-state-running .timer-hud-outer-ring {
+    -fx-stroke:
+        rgba(0, 217, 255, 0.85);
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.46),
+            14,
+            0.38,
+            0,
+            0
+        );
+}
+
+.timer-state-running .timer-hud-major-marker {
+    -fx-stroke: #8EF1FF;
+}
+
+
+/* ---------- Pausado ---------- */
+
+.timer-state-paused .timer-hud-outer-ring {
+    -fx-stroke: #FFB15A;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(255, 138, 40, 0.38),
+            12,
+            0.34,
+            0,
+            0
+        );
+}
+
+.timer-state-paused .timer-hud-major-marker {
+    -fx-stroke: #FFB15A;
+}
+
+.timer-state-paused .timer-hud-minor-marker {
+    -fx-stroke:
+        rgba(255, 138, 40, 0.35);
+}
+
+
+/* ---------- Pronto ---------- */
+
+.timer-state-idle .timer-hud-outer-ring {
+    -fx-stroke:
+        rgba(99, 232, 255, 0.48);
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.18),
+            8,
+            0.24,
+            0,
+            0
+        );
+}
+
+
+/* ---------- Sem objetivo ---------- */
+
+.timer-state-empty {
+    -fx-opacity: 0.58;
+}
