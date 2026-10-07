@@ -1,0 +1,341 @@
+/* =========================================================
+   FocusFlow HUD
+   Fundação visual do assistente de produtividade
+   ========================================================= */
+
+/* ---------- Paleta base ---------- */
+
+.root {
+    -fx-font-family:
+        "Segoe UI",
+        "Inter",
+        "Arial",
+        sans-serif;
+
+    -fx-background-color:
+        linear-gradient(
+            to bottom right,
+            #030812 0%,
+            #071525 52%,
+            #04101D 100%
+        );
+
+    -fx-text-fill: #EAF8FF;
+}
+
+
+/* ---------- Containers ---------- */
+
+.focusflow-root {
+    -fx-background-color:
+        linear-gradient(
+            to bottom right,
+            #030812 0%,
+            #071525 50%,
+            #05101C 100%
+        );
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.28);
+
+    -fx-border-width: 1;
+
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+}
+
+
+/* ---------- Labels ---------- */
+
+.label {
+    -fx-text-fill: #DDF6FF;
+}
+
+.hud-muted {
+    -fx-text-fill: #7797AA;
+}
+
+.hud-title {
+    -fx-text-fill: #F4FCFF;
+    -fx-font-weight: 700;
+}
+
+.hud-accent {
+    -fx-text-fill: #00D9FF;
+}
+
+
+/* ---------- Botões ---------- */
+
+.button {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(12, 37, 58, 0.96),
+            rgba(5, 22, 37, 0.96)
+        );
+
+    -fx-text-fill: #DDF8FF;
+
+    -fx-font-weight: 600;
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.55);
+
+    -fx-border-width: 1;
+
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+
+    -fx-padding: 7 13 7 13;
+
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color:
+        linear-gradient(
+            to bottom,
+            rgba(10, 66, 91, 0.98),
+            rgba(7, 38, 58, 0.98)
+        );
+
+    -fx-border-color: #00D9FF;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.32),
+            10,
+            0.35,
+            0,
+            0
+        );
+}
+
+.button:pressed {
+    -fx-background-color: #0B263B;
+}
+
+.button:disabled {
+    -fx-opacity: 0.38;
+}
+
+
+/* ---------- Campos de entrada ---------- */
+
+.text-field {
+    -fx-background-color: rgba(3, 16, 28, 0.90);
+
+    -fx-text-fill: #EAFBFF;
+    -fx-prompt-text-fill: #607E91;
+
+    -fx-highlight-fill: #00A8CC;
+    -fx-highlight-text-fill: white;
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.36);
+
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
+
+    -fx-padding: 7 10 7 10;
+}
+
+.text-field:focused {
+    -fx-border-color: #00D9FF;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.26),
+            8,
+            0.30,
+            0,
+            0
+        );
+}
+
+
+/* ---------- ComboBox ---------- */
+
+.combo-box {
+    -fx-background-color: rgba(3, 16, 28, 0.92);
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.38);
+
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
+}
+
+.combo-box:hover {
+    -fx-border-color: #00D9FF;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #DDF6FF;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #071525;
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.48);
+
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #071525;
+    -fx-text-fill: #DDF6FF;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #0B3048;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #0D506A;
+}
+
+
+/* ---------- Scrollbars ---------- */
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color:
+        rgba(0, 217, 255, 0.32);
+
+    -fx-background-radius: 8;
+}
+
+
+/* ---------- HUD Panels ---------- */
+
+.hud-panel {
+    -fx-background-color:
+        linear-gradient(
+            to bottom right,
+            rgba(6, 25, 42, 0.94),
+            rgba(3, 14, 25, 0.96)
+        );
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.36);
+
+    -fx-border-width: 1;
+
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+
+    -fx-padding: 12;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 153, 204, 0.10),
+            12,
+            0.20,
+            0,
+            2
+        );
+}
+
+
+/* ---------- Estados e destaques ---------- */
+
+.hud-primary {
+    -fx-border-color: #00D9FF;
+    -fx-text-fill: #CFF9FF;
+}
+
+.hud-success {
+    -fx-border-color: #23E6B1;
+    -fx-text-fill: #60FFD1;
+}
+
+.hud-warning {
+    -fx-border-color: #FF8A28;
+    -fx-text-fill: #FFB36E;
+}
+
+.hud-danger {
+    -fx-border-color: #FF5067;
+    -fx-text-fill: #FF7586;
+}
+
+
+/* ---------- Tooltip ---------- */
+
+.tooltip {
+    -fx-background-color: #061625;
+
+    -fx-text-fill: #DDF6FF;
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.5);
+
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+
+/* ---------- Context / Menu ---------- */
+
+.context-menu {
+    -fx-background-color: #071525;
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.40);
+
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.menu-item .label {
+    -fx-text-fill: #DDF6FF;
+}
+
+.menu-item:focused {
+    -fx-background-color: #0A4058;
+}
+
+
+/* ---------- Separadores ---------- */
+
+.separator .line {
+    -fx-border-color:
+        rgba(0, 217, 255, 0.20);
+
+    -fx-border-width: 1 0 0 0;
+}
+
+
+/* ---------- Feedback ---------- */
+
+.hud-feedback {
+    -fx-text-fill: #8FB7C8;
+    -fx-font-size: 10px;
+}
+
+
+/* ---------- Atalhos ---------- */
+
+.hud-shortcuts {
+    -fx-text-fill: #58788C;
+    -fx-font-size: 9px;
+}

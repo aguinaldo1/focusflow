@@ -13,6 +13,21 @@ import java.util.Objects;
 
 public final class PomodoroPanel extends StackPane {
 
+    private static final String FOCUS_TIMER_COLOR =
+            "#EAFBFF";
+
+    private static final String FOCUS_PHASE_COLOR =
+            "#00D9FF";
+
+    private static final String BREAK_TIMER_COLOR =
+            "#B8FFF0";
+
+    private static final String BREAK_PHASE_COLOR =
+            "#23E6B1";
+
+    private static final String INACTIVE_COLOR =
+            "#7797AA";
+
     private final Label phaseLabel;
     private final Label timeLabel;
     private final Label statusLabel;
@@ -34,7 +49,8 @@ public final class PomodoroPanel extends StackPane {
 
         statusLabel.setStyle(
                 "-fx-font-size: 10px;"
-                        + "-fx-opacity: 0.75;"
+                        + "-fx-opacity: 0.78;"
+                        + "-fx-text-fill: #8FB7C8;"
         );
 
         cyclesLabel =
@@ -44,7 +60,8 @@ public final class PomodoroPanel extends StackPane {
 
         cyclesLabel.setStyle(
                 "-fx-font-size: 11px;"
-                        + "-fx-opacity: 0.85;"
+                        + "-fx-opacity: 0.90;"
+                        + "-fx-text-fill: #A9C8D8;"
         );
 
         progressDonut =
@@ -188,28 +205,28 @@ public final class PomodoroPanel extends StackPane {
         ) {
 
             timerColor =
-                    "#0F766E";
+                    BREAK_TIMER_COLOR;
 
             phaseColor =
-                    "#0F766E";
+                    BREAK_PHASE_COLOR;
 
         } else if (
                 phase == PomodoroPhase.FOCUS
         ) {
 
             timerColor =
-                    "#0F172A";
+                    FOCUS_TIMER_COLOR;
 
             phaseColor =
-                    "#475569";
+                    FOCUS_PHASE_COLOR;
 
         } else {
 
             timerColor =
-                    "#64748B";
+                    INACTIVE_COLOR;
 
             phaseColor =
-                    "#64748B";
+                    INACTIVE_COLOR;
         }
 
         timeLabel.setStyle(

@@ -1,6 +1,7 @@
 package io.github.aguinaldo1.focusflow.ui;
 
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -15,6 +16,16 @@ public final class ProgressDonut extends StackPane {
             2.0
                     * Math.PI
                     * RADIUS;
+
+    private static final Color BACKGROUND_RING_COLOR =
+            Color.web(
+                    "#123247"
+            );
+
+    private static final Color PROGRESS_RING_COLOR =
+            Color.web(
+                    "#00D9FF"
+            );
 
     private final Label percentageLabel;
     private final Circle progressRing;
@@ -31,9 +42,7 @@ public final class ProgressDonut extends StackPane {
         );
 
         backgroundRing.setStroke(
-                Color.web(
-                        "#E2E8F0"
-                )
+                BACKGROUND_RING_COLOR
         );
 
         backgroundRing.setStrokeWidth(
@@ -50,9 +59,7 @@ public final class ProgressDonut extends StackPane {
         );
 
         progressRing.setStroke(
-                Color.web(
-                        "#4F46E5"
-                )
+                PROGRESS_RING_COLOR
         );
 
         progressRing.setStrokeWidth(
@@ -78,6 +85,28 @@ public final class ProgressDonut extends StackPane {
                 -90
         );
 
+        DropShadow glow =
+                new DropShadow();
+
+        glow.setColor(
+                Color.web(
+                        "#00D9FF",
+                        0.42
+                )
+        );
+
+        glow.setRadius(
+                6
+        );
+
+        glow.setSpread(
+                0.12
+        );
+
+        progressRing.setEffect(
+                glow
+        );
+
         percentageLabel =
                 new Label(
                         "0%"
@@ -86,7 +115,7 @@ public final class ProgressDonut extends StackPane {
         percentageLabel.setStyle(
                 "-fx-font-size: 11px;"
                         + "-fx-font-weight: bold;"
-                        + "-fx-text-fill: #334155;"
+                        + "-fx-text-fill: #EAFBFF;"
         );
 
         getChildren().addAll(

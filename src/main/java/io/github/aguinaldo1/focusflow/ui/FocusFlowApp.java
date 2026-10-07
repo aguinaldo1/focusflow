@@ -99,6 +99,12 @@ public final class FocusFlowApp extends Application {
                         + "-fx-opacity: 0.65;"
         );
 
+        shortcutsLabel
+                .getStyleClass()
+                .add(
+                        "hud-shortcuts"
+                );
+
         VBox root =
                 new VBox(
                         7,
@@ -118,11 +124,38 @@ public final class FocusFlowApp extends Application {
                 new Insets(14)
         );
 
+        root
+                .getStyleClass()
+                .add(
+                        "focusflow-root"
+                );
+
         Scene scene =
                 new Scene(
                         root,
                         430,
                         410
+                );
+
+        var hudStylesheet =
+                FocusFlowApp.class
+                        .getResource(
+                                "/styles/focusflow-hud.css"
+                        );
+
+        if (hudStylesheet == null) {
+
+            throw new IllegalStateException(
+                    "CSS HUD não encontrado: "
+                            + "/styles/focusflow-hud.css"
+            );
+        }
+
+        scene
+                .getStylesheets()
+                .add(
+                        hudStylesheet
+                                .toExternalForm()
                 );
 
         configureKeyboardShortcuts(
@@ -221,6 +254,12 @@ public final class FocusFlowApp extends Application {
         feedbackLabel.setStyle(
                 "-fx-font-size: 10px;"
         );
+
+        feedbackLabel
+                .getStyleClass()
+                .add(
+                        "hud-feedback"
+                );
 
         pomodoroControls =
                 new PomodoroControls(
