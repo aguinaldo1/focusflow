@@ -404,3 +404,53 @@ O Timer HUD já comunica os estados adequadamente e o FocusFlow deve evitar efei
 ## Resultado
 
 O Timer HUD passou a funcionar como um indicador visual completo da sessão, combinando fase, estado, tempo restante e progresso temporal.
+---
+
+# BLOCO 20C.1 — Área visual do Assistente FocusFlow
+
+**Status:** ✅ Concluído
+
+## Objetivo
+
+Criar a área visual do assistente da versão 1.0 do FocusFlow sem introduzir inteligência artificial.
+
+## Alterações
+
+Foi criado:
+
+`ui/AssistantPanel.java`
+
+O componente possui:
+
+- painel HUD próprio;
+- núcleo visual luminoso;
+- identificação `FOCUSFLOW`;
+- área de mensagem;
+- suporte a mensagens de múltiplas linhas.
+
+O painel foi integrado entre o objetivo atual e o Timer HUD.
+
+A janela principal passou para `430 x 600` para acomodar o novo componente sem cortar controles.
+
+## Papel na versão 1.0
+
+O assistente será visual e determinístico.
+
+As mensagens serão geradas a partir do estado real da aplicação, sem modelos de IA ou serviços externos.
+
+A integração com IA permanece planejada somente para uma futura versão 2.0.
+
+## Validação
+
+- 78 testes automatizados passando;
+- AssistantPanel renderizado corretamente;
+- núcleo luminoso visível;
+- identificação FOCUSFLOW visível;
+- mensagem padrão legível;
+- Timer HUD preservado;
+- Histórico completamente visível;
+- nenhum componente cortado.
+
+## Resultado
+
+O FocusFlow passou a possuir uma área dedicada ao seu assistente, preparada para receber identidade visual própria e mensagens contextuais.

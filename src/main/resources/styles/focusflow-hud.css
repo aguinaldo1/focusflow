@@ -862,3 +862,98 @@
 .timer-state-empty {
     -fx-opacity: 0.58;
 }
+/* =========================================================
+   Assistente FocusFlow — BLOCO 20C.1
+   ========================================================= */
+
+
+/* ---------- Painel ---------- */
+
+.assistant-panel {
+    -fx-background-color:
+        linear-gradient(
+            to right,
+            rgba(5, 28, 45, 0.96),
+            rgba(3, 17, 29, 0.96)
+        );
+
+    -fx-border-color:
+        rgba(0, 217, 255, 0.34);
+
+    -fx-padding: 8 12 8 12;
+
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+
+/* ---------- Identidade ---------- */
+
+.assistant-identity {
+    -fx-text-fill: #5CDFF7;
+
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+}
+
+
+/* ---------- Mensagem ---------- */
+
+.assistant-message {
+    -fx-text-fill: #DDF6FF;
+
+    -fx-font-size: 11px;
+}
+
+
+/* ---------- Núcleo externo ---------- */
+
+.assistant-core-outer {
+    -fx-fill:
+        rgba(3, 24, 39, 0.60);
+
+    -fx-stroke:
+        rgba(0, 217, 255, 0.66);
+
+    -fx-stroke-width: 1.4;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.32),
+            10,
+            0.32,
+            0,
+            0
+        );
+}
+
+
+/* ---------- Núcleo intermediário ---------- */
+
+.assistant-core-inner {
+    -fx-fill:
+        rgba(4, 43, 63, 0.72);
+
+    -fx-stroke:
+        rgba(99, 232, 255, 0.48);
+
+    -fx-stroke-width: 1;
+}
+
+
+/* ---------- Energia ---------- */
+
+.assistant-core-energy {
+    -fx-fill: #63E8FF;
+
+    -fx-effect:
+        dropshadow(
+            gaussian,
+            rgba(0, 217, 255, 0.80),
+            12,
+            0.48,
+            0,
+            0
+        );
+}

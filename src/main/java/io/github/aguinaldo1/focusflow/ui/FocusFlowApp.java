@@ -53,6 +53,7 @@ public final class FocusFlowApp extends Application {
     private Label feedbackLabel;
 
     private ObjectivePanel objectivePanel;
+    private AssistantPanel assistantPanel;
     private PomodoroPanel pomodoroPanel;
     private PomodoroControls pomodoroControls;
 
@@ -72,6 +73,7 @@ public final class FocusFlowApp extends Application {
                 new SystemTrayIntegration();
 
         createObjectivePanel();
+        createAssistantPanel();
         createPomodoroControls();
         createPomodoroPanel();
         createHistoryControl(
@@ -109,6 +111,7 @@ public final class FocusFlowApp extends Application {
                 new VBox(
                         7,
                         objectivePanel,
+                        assistantPanel,
                         pomodoroPanel,
                         pomodoroControls,
                         historyControls,
@@ -134,7 +137,7 @@ public final class FocusFlowApp extends Application {
                 new Scene(
                         root,
                         430,
-                        520
+                        600
                 );
 
         var hudStylesheet =
@@ -244,6 +247,12 @@ public final class FocusFlowApp extends Application {
                         this::removeSelectedObjective,
                         this::adjustPlannedCycles
                 );
+    }
+
+    private void createAssistantPanel() {
+
+        assistantPanel =
+                new AssistantPanel();
     }
 
     private void createPomodoroControls() {
