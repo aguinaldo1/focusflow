@@ -1,11 +1,13 @@
 package io.github.aguinaldo1.focusflow.ui;
 
+import java.net.URL;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 
 import java.util.Objects;
 
@@ -24,9 +26,7 @@ public final class AssistantPanel extends HBox {
                 "hud-panel",
                 "assistant-panel"
         );
-
-        StackPane assistantCore =
-                createAssistantCore();
+        ImageView assistantMascot = createAssistantMascot();
 
         Label identityLabel =
                 new Label(
@@ -68,7 +68,7 @@ public final class AssistantPanel extends HBox {
         );
 
         getChildren().addAll(
-                assistantCore,
+                assistantMascot,
                 messageArea
         );
 
@@ -122,67 +122,36 @@ public final class AssistantPanel extends HBox {
         );
     }
 
-    private static StackPane createAssistantCore() {
+    private static ImageView createAssistantMascot() {
+        ImageView mascot = new ImageView();
 
-        Circle outerRing =
-                new Circle(
-                        25
-                );
-
-        outerRing
-                .getStyleClass()
-                .add(
-                        "assistant-core-outer"
-                );
-
-        Circle innerRing =
-                new Circle(
-                        17
-                );
-
-        innerRing
-                .getStyleClass()
-                .add(
-                        "assistant-core-inner"
-                );
-
-        Circle energyCore =
-                new Circle(
-                        7
-                );
-
-        energyCore
-                .getStyleClass()
-                .add(
-                        "assistant-core-energy"
-                );
-
-        StackPane core =
-                new StackPane(
-                        outerRing,
-                        innerRing,
-                        energyCore
-                );
-
-        core.setMinSize(
-                56,
-                56
+        mascot.getStyleClass().add(
+                "assistant-mascot-image"
         );
 
-        core.setPrefSize(
-                56,
-                56
+        mascot.setFitWidth(72);
+        mascot.setFitHeight(72);
+        mascot.setPreserveRatio(true);
+        mascot.setSmooth(true);
+        mascot.setMouseTransparent(true);
+
+        URL resource = AssistantPanel.class.getResource(
+                "/assets/assistant/bust/"
+                + "focusflow-assistant-bust.png"
         );
 
-        core.setMaxSize(
-                56,
-                56
+        if (resource == null) {
+            System.err.println(
+                    "FocusFlow: asset do assistente "
+                    + "não encontrado."
+            );
+            return mascot;
+        }
+
+        mascot.setImage(
+                new Image(resource.toExternalForm())
         );
 
-        core.setMouseTransparent(
-                true
-        );
-
-        return core;
+        return mascot;
     }
 }
